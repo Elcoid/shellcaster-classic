@@ -105,7 +105,7 @@ fn download_file(mut ep_data: EpData, dest: PathBuf, mut max_retries: usize) -> 
     });
 
     if let Some(pubdate) = ep_data.pubdate {
-        file_name = format!("{}_{}", file_name, pubdate.format("%Y%m%d_%H%M%S"));
+        file_name = format!("{}_{}", pubdate.format("%Y%m%d_%H%M%S"), file_name);
     }
 
     let mut file_path = dest;
