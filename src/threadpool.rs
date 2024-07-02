@@ -9,91 +9,91 @@ use std::thread;
 /// necessary. Implements Drop trait to allow threads to complete
 /// their current jobs before being stopped.
 pub struct Threadpool {
-    workers: Vec<Worker>,
-    sender: mpsc::Sender<JobMessage>,
+	workers: Vec<Worker>,
+	sender: mpsc::Sender<JobMessage>,
 }
 
 impl Threadpool {
-    /// Creates a new Threadpool of a given size.
-    pub fn new(n_threads: usize) -> Threadpool {
-        let (sender, receiver) = mpsc::channel();
-        let receiver_lock = Arc::new(Mutex::new(receiver));
+	/// Creates a new Threadpool of a given size.
+	pub fn new(n_threads: usize) -> Threadpool {
+		let (sender, receiver) = mpsc::channel();
+		let receiver_lock = Arc::new(Mutex::new(receiver));
 
-        let mut workers = Vec::with_capacity(n_threads);
+		let mut workers = Vec::with_capacity(n_threads);
 
-        for _ in 0..n_threads {
-            workers.push(Worker::new(Arc::clone(&receiver_lock)));
-        }
+		for _ in 0..n_threads {
+			workers.push(Worker::new(Arc::clone(&receiver_lock)));
+		}
 
-        return Threadpool {
-            workers: workers,
-            sender: sender,
-        };
-    }
+		return Threadpool {
+			workers: workers,
+			sender: sender,
+		};
+	}
 
-    /// Adds a new job to the threadpool, passing closure to first
-    /// available worker.
-    pub fn execute<F>(&self, func: F)
-    where F: FnOnce() + Send + 'static {
-        let job = Box::new(func);
-        self.sender
-            .send(JobMessage::NewJob(job))
-            .expect("Thread messaging error");
-    }
+	/// Adds a new job to the threadpool, passing closure to first
+	/// available worker.
+	pub fn execute<F>(&self, func: F)
+	where F: FnOnce() + Send + 'static {
+		let job = Box::new(func);
+		self.sender
+			.send(JobMessage::NewJob(job))
+			.expect("Thread messaging error");
+	}
 }
 
 impl Drop for Threadpool {
-    /// Upon going out of scope, Threadpool sends terminate message to
-    /// all workers but allows them to complete current jobs.
-    fn drop(&mut self) {
-        for _ in &self.workers {
-            self.sender
-                .send(JobMessage::Terminate)
-                .expect("Thread messaging error");
-        }
+	/// Upon going out of scope, Threadpool sends terminate message to
+	/// all workers but allows them to complete current jobs.
+	fn drop(&mut self) {
+		for _ in &self.workers {
+			self.sender
+				.send(JobMessage::Terminate)
+				.expect("Thread messaging error");
+		}
 
-        for worker in &mut self.workers {
-            if let Some(thread) = worker.thread.take() {
-                // joins to ensure threads finish job before stopping
-                thread.join().expect("Error dropping threads");
-            }
-        }
-    }
+		for worker in &mut self.workers {
+			if let Some(thread) = worker.thread.take() {
+				// joins to ensure threads finish job before stopping
+				thread.join().expect("Error dropping threads");
+			}
+		}
+	}
 }
 
 type Job = Box<dyn FnOnce() + Send + 'static>;
 
 /// Messages used by Threadpool to communicate with Workers.
 enum JobMessage {
-    NewJob(Job),
-    Terminate,
+	NewJob(Job),
+	Terminate,
 }
 
 /// Used by Threadpool to complete jobs. Each Worker manages a single
 /// thread.
 struct Worker {
-    thread: Option<thread::JoinHandle<()>>,
+	thread: Option<thread::JoinHandle<()>>,
 }
 
 impl Worker {
-    /// Creates a new Worker, which waits for Jobs to be passed by the
-    /// Threadpool.
-    fn new(receiver: Arc<Mutex<mpsc::Receiver<JobMessage>>>) -> Worker {
-        let thread = thread::spawn(move || loop {
-            let message = receiver
-                .lock()
-                .expect("Threadpool error")
-                .recv()
-                .expect("Thread messaging error");
+	/// Creates a new Worker, which waits for Jobs to be passed by the
+	/// Threadpool.
+	fn new(receiver: Arc<Mutex<mpsc::Receiver<JobMessage>>>) -> Worker {
+		let thread = thread::spawn(move || loop {
+			let message = receiver
+				.lock()
+				.expect("Threadpool error")
+				.recv()
+				.expect("Thread messaging error");
 
-            match message {
-                JobMessage::NewJob(job) => job(),
-                JobMessage::Terminate => break,
-            }
-        });
+			match message {
+				JobMessage::NewJob(job) => job(),
+				JobMessage::Terminate => break,
+			}
+		});
 
-        return Worker {
-            thread: Some(thread),
-        };
-    }
+		return Worker {
+			thread: Some(thread),
+		};
+	}
 }
