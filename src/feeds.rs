@@ -16,7 +16,9 @@ lazy_static!
 {
 	/// Regex for parsing an episode "duration", which could take the form
 	/// of HH:MM:SS, MM:SS, or SS.
-	static ref RE_DURATION: Regex = Regex::new(r"(\d+)(?::(\d+))?(?::(\d+))?").expect("Regex error");
+	static ref RE_DURATION: Regex = Regex::new(
+		r"(\d+)(?::(\d+))?(?::(\d+))?"
+	).expect("Regex error");
 }
 
 /// Enum for communicating back to the main thread after feed data has

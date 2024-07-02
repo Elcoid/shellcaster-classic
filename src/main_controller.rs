@@ -53,7 +53,8 @@ impl MainController
 	/// thread, and reads the list of podcasts from the database.
 	pub fn new(config: Config, db_path: &Path) -> Result<MainController>
 	{
-		// create transmitters and receivers for passing messages between threads
+		// create transmitters and receivers for
+		// passing messages between threads
 		let (tx_to_ui, rx_from_main) = mpsc::channel();
 		let (tx_to_main, rx_to_main) = mpsc::channel();
 
@@ -96,7 +97,9 @@ impl MainController
 		});
 	}
 
-	/// Initiates the main loop where the controller waits for messages coming in from the UI and other threads, and processes them.
+	/// Initiates the main loop where the controller waits for
+	/// messages coming in from the UI and other threads, and
+	/// processes them.
 	pub fn loop_msgs(&mut self)
 	{
 		while let Some(message) = self.rx_to_main.iter().next()
@@ -112,9 +115,15 @@ impl MainController
 				Message::Feed(FeedMsg::Error(feed)) => match feed.title
 				{
 					Some(t) => {
-						self.notif_to_ui(format!("Error retrieving RSS feed for {t}."), true)
+						self.notif_to_ui(
+							format!("Error retrieving RSS feed for {t}."),
+							true
+						)
 					}
-					None => self.notif_to_ui("Error retrieving RSS feed.".to_string(), true),
+					None => self.notif_to_ui(
+						"Error retrieving RSS feed.".to_string(),
+						true
+					),
 				},
 
 				Message::Ui(UiMsg::Sync(pod_id)) => self.sync(Some(pod_id)),
@@ -133,7 +142,10 @@ impl MainController
 					self.mark_all_played(pod_id, played)
 				}
 
-				Message::Ui(UiMsg::Download(pod_id, ep_id)) => self.download(pod_id, Some(ep_id)),
+				Message::Ui(UiMsg::Download(pod_id, ep_id)) => self.download(
+					pod_id,
+					Some(ep_id)
+				),
 
 				Message::Ui(UiMsg::DownloadMulti(vec)) => {
 					for (pod_id, ep_id) in vec.into_iter()
@@ -273,7 +285,8 @@ impl MainController
 		if sync_len > 0 && dl_len > 0
 		{
 			let notif = format!(
-				"Syncing {sync_len} podcast{sync_plural}, downloading {dl_len} episode{dl_plural}...");
+				"Syncing {sync_len} podcast{sync_plural}, downloading {dl_len} episode{dl_plural}..."
+			);
 			self.persistent_notif_to_ui(notif, false);
 		}
 		else if sync_len > 0
@@ -319,14 +332,22 @@ impl MainController
 			Some(id) => pod_data.push(
 				self.podcasts
 					.map_single(id, |pod| {
-						PodcastFeed::new(Some(pod.id), pod.url.clone(), Some(pod.title.clone()))
+						PodcastFeed::new(
+							Some(pod.id),
+							pod.url.clone(),
+							Some(pod.title.clone())
+						)
 					})
 					.unwrap(),
 			),
 			// get all of 'em!
 			None => {
 				pod_data = self.podcasts.map(
-					|pod| PodcastFeed::new(Some(pod.id), pod.url.clone(), Some(pod.title.clone())),
+					|pod| PodcastFeed::new(
+						Some(pod.id),
+						pod.url.clone(),
+						Some(pod.title.clone())
+					),
 					false,
 				)
 			}
@@ -396,7 +417,9 @@ impl MainController
 						}
 						self.sync_tracker = Vec::new();
 						self.notif_to_ui(
-							format!("Sync complete: Added {added}, updated {updated} episodes."),
+							format!(
+								"Sync complete: Added {added}, updated {updated} episodes."
+							),
 							false,
 						);
 
@@ -586,7 +609,9 @@ impl MainController
 			// add directory for podcast, create if it does not exist
 			let dir_name = sanitize_with_options(&pod_title, Options {
 				truncate: true,
-				windows: true, // for simplicity, we'll just use Windows-friendly paths for everyone
+				// for simplicity, we'll just use
+				// Windows-friendly paths for everyone
+				windows: true,
 				replacement: "",
 			});
 			match self.create_podcast_dir(dir_name)
@@ -604,7 +629,10 @@ impl MainController
 						self.tx_to_main.clone(),
 					);
 				}
-				Err(_) => self.notif_to_ui(format!("Could not create dir: {pod_title}"), true),
+				Err(_) => self.notif_to_ui(
+					format!("Could not create dir: {pod_title}"),
+					true
+				),
 			}
 			self.update_tracker_notif();
 		}
@@ -646,7 +674,10 @@ impl MainController
 
 	/// Given a podcast title, creates a download directory for that
 	/// podcast if it does not already exist.
-	pub fn create_podcast_dir(&self, pod_title: String) -> Result<PathBuf, std::io::Error>
+	pub fn create_podcast_dir(
+		&self,
+		pod_title: String
+	) -> Result<PathBuf, std::io::Error>
 	{
 		let mut download_path = self.config.download_path.clone();
 		download_path.push(pod_title);
@@ -686,7 +717,10 @@ impl MainController
 					self.update_filters(self.filters, true);
 					self.notif_to_ui(format!("Deleted \"{title}\""), false);
 				}
-				Err(_) => self.notif_to_ui(format!("Error deleting \"{title}\""), true),
+				Err(_) => self.notif_to_ui(
+					format!("Error deleting \"{title}\""),
+					true
+				),
 			}
 		}
 	}
@@ -750,7 +784,10 @@ impl MainController
 		let res = self.db.remove_podcast(pod_id);
 		if res.is_err()
 		{
-			self.notif_to_ui("Could not remove podcast from database".to_string(), true);
+			self.notif_to_ui(
+				"Could not remove podcast from database".to_string(),
+				true
+			);
 			return;
 		}
 		{

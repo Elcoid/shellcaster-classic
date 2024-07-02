@@ -72,7 +72,10 @@ fn main() -> Result<()>
 			.global(true)
 			.takes_value(true)
 			.value_name("FILE")
-			.help("Sets a custom config file location. Can also be set with environment variable."))
+			.help(
+				"Sets a custom config file location. Can also be set with environment variable."
+			)
+		)
 		.subcommand(Command::new("sync")
 			.about("Syncs all podcasts in database")
 			.arg(Arg::new("quiet")
@@ -86,12 +89,18 @@ fn main() -> Result<()>
 				.long("file")
 				.takes_value(true)
 				.value_name("FILE")
-				.help("Specifies the filepath to the OPML file to be imported. If this flag is not set, the command will read from stdin."))
+				.help(
+					"Specifies the filepath to the OPML file to be imported. If this flag is not set, the command will read from stdin."
+				)
+			)
 			.arg(Arg::new("replace")
 				.short('r')
 				.long("replace")
 				.takes_value(false)
-				.help("If set, the contents of the OPML file will replace all existing data in the shellcaster database."))
+				.help(
+					"If set, the contents of the OPML file will replace all existing data in the shellcaster database."
+				)
+			)
 			.arg(Arg::new("quiet")
 				.short('q')
 				.long("quiet")
@@ -103,7 +112,11 @@ fn main() -> Result<()>
 				.long("file")
 				.takes_value(true)
 				.value_name("FILE")
-				.help("Specifies the filepath for where the OPML file will be exported. If this flag is not set, the command will print to stdout.")))
+				.help(
+					"Specifies the filepath for where the OPML file will be exported. If this flag is not set, the command will print to stdout."
+				)
+			)
+		)
 		.get_matches();
 
 	// figure out where config file is located -- either specified from
@@ -111,7 +124,9 @@ fn main() -> Result<()>
 	// config location for OS
 	let config_path = get_config_path(args.value_of("config"))
 		.unwrap_or_else(|| {
-			eprintln!("Could not identify your operating system's default directory to store configuration files. Please specify paths manually using config.toml and use `-c` or `--config` flag to specify where config.toml is located when launching the program.");
+			eprintln!(
+				"Could not identify your operating system's default directory to store configuration files. Please specify paths manually using config.toml and use `-c` or `--config` flag to specify where config.toml is located when launching the program."
+			);
 			process::exit(1);
 		});
 	let config = Config::new(&config_path)?;
@@ -119,7 +134,9 @@ fn main() -> Result<()>
 	let mut db_path = config_path;
 	if !db_path.pop()
 	{
-		return Err(anyhow!("Could not correctly parse the config file location. Please specify a valid path to the config file."));
+		return Err(anyhow!(
+			"Could not correctly parse the config file location. Please specify a valid path to the config file."
+		));
 	}
 
 
@@ -141,7 +158,8 @@ fn main() -> Result<()>
 			main_ctrl.loop_msgs(); // main loop
 
 			main_ctrl.tx_to_ui.send(MainMessage::UiTearDown).unwrap();
-			main_ctrl.ui_thread.join().unwrap(); // wait for UI thread to finish teardown
+			// wait for UI thread to finish teardown
+			main_ctrl.ui_thread.join().unwrap();
 			Ok(())
 		}
 	};
@@ -178,7 +196,11 @@ fn get_config_path(config: Option<&str>) -> Option<PathBuf>
 
 
 /// Synchronizes RSS feed data for all podcasts, without setting up a UI.
-fn sync_podcasts(db_path: &Path, config: Config, args: &clap::ArgMatches) -> Result<()>
+fn sync_podcasts(
+	db_path: &Path,
+	config: Config,
+	args: &clap::ArgMatches
+) -> Result<()>
 {
 	let db_inst = Database::connect(db_path)?;
 	let podcast_list = db_inst.get_podcasts()?;
@@ -197,8 +219,17 @@ fn sync_podcasts(db_path: &Path, config: Config, args: &clap::ArgMatches) -> Res
 
 	for pod in podcast_list.iter()
 	{
-		let feed = PodcastFeed::new(Some(pod.id), pod.url.clone(), Some(pod.title.clone()));
-		feeds::check_feed(feed, config.max_retries, &threadpool, tx_to_main.clone());
+		let feed = PodcastFeed::new(
+			Some(pod.id),
+			pod.url.clone(),
+			Some(pod.title.clone())
+		);
+		feeds::check_feed(
+			feed,
+			config.max_retries,
+			&threadpool,
+			tx_to_main.clone()
+		);
 	}
 
 	let mut msg_counter: usize = 0;
@@ -258,16 +289,25 @@ fn sync_podcasts(db_path: &Path, config: Config, args: &clap::ArgMatches) -> Res
 /// Imports a list of podcasts from OPML format, either reading from a
 /// file or from stdin. If the `replace` flag is set, this replaces all
 /// existing data in the database.
-fn import(db_path: &Path, config: Config, args: &clap::ArgMatches) -> Result<()> {
+fn import(
+	db_path: &Path,
+	config: Config,
+	args: &clap::ArgMatches
+) -> Result<()>
+{
 	// read from file or from stdin
 	let xml = match args.value_of("file")
 	{
 		Some(filepath) => {
 			let mut f = File::open(filepath)
-				.with_context(|| format!("Could not open OPML file: {filepath}"))?;
+				.with_context(|| format!(
+					"Could not open OPML file: {filepath}"
+				))?;
 			let mut contents = String::new();
 			f.read_to_string(&mut contents)
-				.with_context(|| format!("Failed to read from OPML file: {filepath}"))?;
+				.with_context(|| format!(
+					"Failed to read from OPML file: {filepath}"
+				))?;
 			contents
 		}
 		None => {
@@ -421,9 +461,13 @@ fn export(db_path: &Path, args: &clap::ArgMatches) -> Result<()> {
 		// export to file
 		Some(file) => {
 			let mut dst = File::create(file)
-				.with_context(|| format!("Could not create output file: {file}"))?;
+				.with_context(|| format!(
+					"Could not create output file: {file}"
+				))?;
 			dst.write_all(xml.as_bytes())
-				.with_context(|| format!("Could not copy OPML data to output file: {file}"))?;
+				.with_context(|| format!(
+					"Could not copy OPML data to output file: {file}"
+				))?;
 		}
 		// print to stdout
 		None => println!("{xml}"),

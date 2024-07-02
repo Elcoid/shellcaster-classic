@@ -41,13 +41,19 @@ lazy_static!
 {
 	/// Regex for finding <br/> tags -- also captures any surrounding
 	/// line breaks
-	static ref RE_BR_TAGS: Regex = Regex::new(r"((\r\n)|\r|\n)*<br */?>((\r\n)|\r|\n)*").expect("Regex error");
+	static ref RE_BR_TAGS: Regex = Regex::new(
+		r"((\r\n)|\r|\n)*<br */?>((\r\n)|\r|\n)*"
+	).expect("Regex error");
 
 	/// Regex for finding HTML tags
-	static ref RE_HTML_TAGS: Regex = Regex::new(r"<[^<>]*>").expect("Regex error");
+	static ref RE_HTML_TAGS: Regex = Regex::new(
+		r"<[^<>]*>"
+	).expect("Regex error");
 
 	/// Regex for finding more than two line breaks
-	static ref RE_MULT_LINE_BREAKS: Regex = Regex::new(r"((\r\n)|\r|\n){3,}").expect("Regex error");
+	static ref RE_MULT_LINE_BREAKS: Regex = Regex::new(
+		r"((\r\n)|\r|\n){3,}"
+	).expect("Regex error");
 }
 
 
@@ -242,7 +248,9 @@ impl<'a> Ui<'a>
 		};
 
 		let notif_win = NotifWin::new(colors.clone(), n_row - 1, n_row, n_col);
-		let popup_win = PopupWin::new(&config.keybindings, colors.clone(), n_row, n_col);
+		let popup_win = PopupWin::new(
+			&config.keybindings, colors.clone(), n_row, n_col
+		);
 
 		return Ui {
 			n_row: n_row,
@@ -297,7 +305,8 @@ impl<'a> Ui<'a>
 
 					// get rid of the "welcome" window once the podcast
 					// list is no longer empty
-					if self.popup_win.welcome_win && !self.podcast_menu.items.is_empty()
+					if self.popup_win.welcome_win &&
+						!self.podcast_menu.items.is_empty()
 					{
 						self.popup_win.turn_off_welcome_win();
 					}
@@ -371,16 +380,19 @@ impl<'a> Ui<'a>
 								}
 							}
 							Some(UserAction::MarkPlayed) => {
-								if let ActivePanel::EpisodeMenu = self.active_panel
+								if let ActivePanel::EpisodeMenu =
+									self.active_panel
 								{
-									if let Some(ui_msg) = self.mark_played(curr_pod_id, curr_ep_id)
+									if let Some(ui_msg) =
+										self.mark_played(curr_pod_id, curr_ep_id)
 									{
 										return ui_msg;
 									}
 								}
 							}
 							Some(UserAction::MarkAllPlayed) => {
-								if let Some(ui_msg) = self.mark_all_played(curr_pod_id)
+								if let Some(ui_msg) =
+									self.mark_all_played(curr_pod_id)
 								{
 									return ui_msg;
 								}
@@ -403,7 +415,8 @@ impl<'a> Ui<'a>
 							}
 
 							Some(UserAction::Delete) => {
-								if let ActivePanel::EpisodeMenu = self.active_panel
+								if let ActivePanel::EpisodeMenu =
+									self.active_panel
 								{
 									if let Some(pod_id) = curr_pod_id
 									{
@@ -424,7 +437,8 @@ impl<'a> Ui<'a>
 							Some(UserAction::Remove) => match self.active_panel
 							{
 								ActivePanel::PodcastMenu => {
-									if let Some(ui_msg) = self.remove_podcast(curr_pod_id)
+									if let Some(ui_msg) =
+										self.remove_podcast(curr_pod_id)
 									{
 										return ui_msg;
 									}
@@ -586,11 +600,17 @@ impl<'a> Ui<'a>
 			}
 
 			UserAction::PageUp => {
-				self.scroll_current_window(curr_pod_id, Scroll::Up(self.n_row - 3));
+				self.scroll_current_window(
+					curr_pod_id,
+					Scroll::Up(self.n_row - 3)
+				);
 			}
 
 			UserAction::PageDown => {
-				self.scroll_current_window(curr_pod_id, Scroll::Down(self.n_row - 3));
+				self.scroll_current_window(
+					curr_pod_id,
+					Scroll::Down(self.n_row - 3)
+				);
 			}
 
 			UserAction::BigUp => {
@@ -704,7 +724,9 @@ impl<'a> Ui<'a>
 	/// Remove a podcast from the list.
 	pub fn remove_podcast(&mut self, curr_pod_id: Option<i64>) -> Option<UiMsg>
 	{
-		let confirm = self.ask_for_confirmation("Are you sure you want to remove the podcast?");
+		let confirm = self.ask_for_confirmation(
+			"Are you sure you want to remove the podcast?"
+		);
 		// If we don't get a confirmation to delete, then don't remove
 		if !confirm
 		{
@@ -718,7 +740,9 @@ impl<'a> Ui<'a>
 			// to delete those too
 			if self.check_for_local_files(pod_id)
 			{
-				let ask_delete = self.spawn_yes_no_notif("Delete local files too?");
+				let ask_delete = self.spawn_yes_no_notif(
+					"Delete local files too?"
+				);
 				delete = ask_delete.unwrap_or(false); // default not to delete
 			}
 
@@ -734,7 +758,9 @@ impl<'a> Ui<'a>
 		curr_ep_id: Option<i64>,
 	) -> Option<UiMsg>
 	{
-		let confirm = self.ask_for_confirmation("Are you sure you want to remove the episode?");
+		let confirm = self.ask_for_confirmation(
+			"Are you sure you want to remove the episode?"
+		);
 		// If we don't get a confirmation to delete, then don't remove
 		if !confirm
 		{
@@ -753,8 +779,11 @@ impl<'a> Ui<'a>
 					.unwrap_or(false);
 				if is_downloaded
 				{
-					let ask_delete = self.spawn_yes_no_notif("Delete local file too?");
-					delete = ask_delete.unwrap_or(false); // default not to delete
+					let ask_delete = self.spawn_yes_no_notif(
+						"Delete local file too?"
+					);
+					// default to not delete
+					delete = ask_delete.unwrap_or(false);
 				}
 
 				return Some(UiMsg::RemoveEpisode(pod_id, ep_id, delete));
@@ -788,8 +817,12 @@ impl<'a> Ui<'a>
 	/// they exist).
 	pub fn get_current_ids(&self) -> (Option<i64>, Option<i64>)
 	{
-		let current_pod_index = (self.podcast_menu.selected + self.podcast_menu.top_row) as usize;
-		let current_ep_index = (self.episode_menu.selected + self.episode_menu.top_row) as usize;
+		let current_pod_index = (
+			self.podcast_menu.selected + self.podcast_menu.top_row
+		) as usize;
+		let current_ep_index = (
+			self.episode_menu.selected + self.episode_menu.top_row
+		) as usize;
 
 		let current_pod_id = self
 			.podcast_menu
@@ -979,7 +1012,8 @@ impl<'a> Ui<'a>
 					// get a couple details from the current podcast
 					let mut pod_title = None;
 					let mut pod_explicit = None;
-					if let Some(pod) = self.podcast_menu.items.borrow_map().get(&pod_id)
+					if let Some(pod) =
+						self.podcast_menu.items.borrow_map().get(&pod_id)
 					{
 						pod_title = if pod.title.is_empty() {
 							None
@@ -990,7 +1024,8 @@ impl<'a> Ui<'a>
 					};
 
 					// the rest of the details come from the current episode
-					if let Some(ep) = self.episode_menu.items.borrow_map().get(&ep_id)
+					if let Some(ep) =
+						self.episode_menu.items.borrow_map().get(&ep_id)
 					{
 						let ep_title = if ep.title.is_empty() {
 							None

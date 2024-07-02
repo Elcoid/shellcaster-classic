@@ -82,7 +82,9 @@ impl<T: Clone + Menuable> Menu<T>
 			let list_len = order.len();
 			if current_selected >= list_len
 			{
-				self.selected = (self.selected as usize - (current_selected - list_len) - 1) as u16;
+				self.selected = (
+					self.selected as usize - (current_selected - list_len) - 1
+				) as u16;
 			}
 
 			// for visible rows, print strings from list
@@ -90,7 +92,9 @@ impl<T: Clone + Menuable> Menu<T>
 			{
 				if let Some(elem_id) = order.get(self.get_menu_idx(i))
 				{
-					let elem = map.get(elem_id).expect("Could not retrieve menu item.");
+					let elem = map.get(elem_id).expect(
+						"Could not retrieve menu item."
+					);
 
 					if i == self.selected || !elem.is_played()
 					{
@@ -212,8 +216,10 @@ impl<T: Clone + Menuable> Menu<T>
 					// can't scroll list if list is shorter than full screen
 					if list_len > visible_rows
 					{
-						self.top_row =
-							min(self.top_row + list_scroll_amount, list_len - visible_rows);
+						self.top_row = min(
+							self.top_row + list_scroll_amount,
+							list_len - visible_rows
+						);
 					}
 					self.selected = select_max;
 					self.panel.clear_inner();
@@ -239,18 +245,15 @@ impl<T: Clone + Menuable> Menu<T>
 			let mut style = style::ContentStyle::new();
 			if active
 			{
-				style = style.with(self.panel.colors.highlighted_active.0).on(self
-					.panel
-					.colors
-					.highlighted_active
-					.1);
+				style = style
+					.with(self.panel.colors.highlighted_active.0)
+					.on(self.panel.colors.highlighted_active.1);
 			}
 			else
 			{
-				style =
-					style
-						.with(self.panel.colors.highlighted.0)
-						.on(self.panel.colors.highlighted.1);
+				style = style
+					.with(self.panel.colors.highlighted.0)
+					.on(self.panel.colors.highlighted.1);
 			}
 			style = if is_played
 			{
@@ -392,7 +395,10 @@ impl Menu<NewEpisode>
 	/// versa.
 	pub fn select_item(&mut self)
 	{
-		let changed = self.change_item_selections(vec![self.get_menu_idx(self.selected)], None);
+		let changed = self.change_item_selections(
+			vec![self.get_menu_idx(self.selected)],
+			None
+		);
 		if changed
 		{
 			self.update_items();
@@ -408,7 +414,10 @@ impl Menu<NewEpisode>
 	{
 		let all_selected = self.items.map(|ep| ep.selected, false).iter().all(|x| *x);
 		let changed =
-			self.change_item_selections((0..self.items.len(false)).collect(), Some(!all_selected));
+			self.change_item_selections(
+				(0..self.items.len(false)).collect(),
+				Some(!all_selected)
+			);
 		if changed
 		{
 			self.update_items();
@@ -421,7 +430,11 @@ impl Menu<NewEpisode>
 	/// will be unselected, and vice versa. If `selection` is a boolean,
 	/// however, it will be set to this value explicitly rather than just
 	/// being reversed.
-	fn change_item_selections(&mut self, indexes: Vec<usize>, selection: Option<bool>) -> bool
+	fn change_item_selections(
+		&mut self,
+		indexes: Vec<usize>,
+		selection: Option<bool>
+	) -> bool
 	{
 		let mut changed = false;
 		{
@@ -457,7 +470,12 @@ mod tests
 	use chrono::Utc;
 	use std::rc::Rc;
 
-	fn create_menu(n_row: u16, n_col: u16, top_row: u16, selected: u16) -> Menu<Episode>
+	fn create_menu(
+		n_row: u16,
+		n_col: u16,
+		top_row: u16,
+		selected: u16
+	) -> Menu<Episode>
 	{
 		let colors = Rc::new(crate::ui::AppColors::default());
 		let titles = vec![

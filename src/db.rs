@@ -80,8 +80,10 @@ impl Database
 						// adding a column to capture episode guids
 						if db_version <= Version::parse("1.2.1")?
 						{
-							conn.execute("ALTER TABLE episodes ADD COLUMN guid TEXT;", params![])
-								.expect("Could not run database migrations.");
+							conn.execute(
+								"ALTER TABLE episodes ADD COLUMN guid TEXT;",
+								params![]
+							).expect("Could not run database migrations.");
 						}
 
 						db_conn.update_version(curr_ver, true)?;
@@ -549,7 +551,11 @@ impl Database
 	}
 
 	/// Generates list of episodes for a given podcast.
-	pub fn get_episodes(&self, pod_id: i64, include_hidden: bool) -> Result<Vec<Episode>>
+	pub fn get_episodes(
+		&self,
+		pod_id: i64,
+		include_hidden: bool
+	) -> Result<Vec<Episode>>
 	{
 		let conn = self.conn.as_ref().expect("Error connecting to database.");
 		let mut stmt = if include_hidden
@@ -614,7 +620,8 @@ fn convert_date(result: Result<i64, rusqlite::Error>) -> Option<DateTime<Utc>>
 	return match result
 	{
 		Ok(timestamp) => {
-			NaiveDateTime::from_timestamp_opt(timestamp, 0).map(|ndt| DateTime::from_utc(ndt, Utc))
+			NaiveDateTime::from_timestamp_opt(timestamp, 0)
+				.map(|ndt| DateTime::from_utc(ndt, Utc))
 		}
 		Err(_) => None,
 	};

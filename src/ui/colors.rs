@@ -9,10 +9,14 @@ use crate::config::AppColorsFromToml;
 lazy_static!
 {
 	/// Regex for parsing a color specified as hex code.
-	static ref RE_COLOR_HEX: Regex = Regex::new(r"(?i)#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})").expect("Regex error");
+	static ref RE_COLOR_HEX: Regex = Regex::new(
+		r"(?i)#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})"
+	).expect("Regex error");
 
 	/// Regex for parsing a color specified as an rgb(x, y, z) value.
-	static ref RE_COLOR_RGB: Regex = Regex::new(r"(?i)rgb\(([0-9]+), ?([0-9]+), ?([0-9]+)\)").expect("Regex error");
+	static ref RE_COLOR_RGB: Regex = Regex::new(
+		r"(?i)rgb\(([0-9]+), ?([0-9]+), ?([0-9]+)\)"
+	).expect("Regex error");
 }
 
 

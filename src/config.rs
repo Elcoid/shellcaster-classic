@@ -138,7 +138,9 @@ impl Config
 					"Could not read config.toml. Please ensure file is readable."
 				})?;
 				toml::from_str(&config_string)
-					.with_context(|| "Could not parse config.toml. Please check file syntax.")?
+					.with_context(|| {
+						"Could not parse config.toml. Please check file syntax."
+					})?
 			}
 			Err(_) => {
 				// if we can't find the file, set everything to empty
@@ -226,7 +228,10 @@ fn config_with_defaults(config_toml: ConfigFromToml) -> Result<Config>
 	// paths are set by user, or they resolve to OS-specific path as
 	// provided by dirs crate
 	let download_path =
-		parse_create_dir(config_toml.download_path.as_deref(), dirs::data_local_dir())?;
+		parse_create_dir(
+			config_toml.download_path.as_deref(),
+			dirs::data_local_dir()
+		)?;
 
 	let play_command = match config_toml.play_command.as_deref()
 	{
@@ -297,7 +302,9 @@ fn parse_create_dir(user_dir: Option<&str>, default: Option<PathBuf>) -> Result<
 				path
 			} else
 			{
-				return Err(anyhow!("Could not identify a default directory for your OS. Please specify paths manually in config.toml."));
+				return Err(anyhow!(
+					"Could not identify a default directory for your OS. Please specify paths manually in config.toml."
+				));
 			}
 		}
 	};

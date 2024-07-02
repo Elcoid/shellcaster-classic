@@ -62,7 +62,9 @@ pub struct NotifWin
 impl NotifWin
 {
 	/// Creates a new NotifWin.
-	pub fn new(colors: Rc<AppColors>, start_y: u16, total_rows: u16, total_cols: u16) -> Self
+	pub fn new(
+		colors: Rc<AppColors>, start_y: u16, total_rows: u16, total_cols: u16
+	) -> Self
 	{
 		return Self {
 			colors: colors,

@@ -139,7 +139,11 @@ impl<'a> PopupWin<'a>
 	{
 		// get list of all keybindings for adding a feed, quitting
 		// program, or opening help menu
-		let actions = vec![UserAction::AddFeed, UserAction::Quit, UserAction::Help];
+		let actions = vec![
+			UserAction::AddFeed,
+			UserAction::Quit,
+			UserAction::Help
+		];
 		let mut key_strs = Vec::new();
 		for action in actions
 		{
@@ -163,8 +167,14 @@ impl<'a> PopupWin<'a>
 		let mut row = 0;
 		row = welcome_win.write_wrap_line(row, "Welcome to shellcaster!", None);
 
-		row = welcome_win.write_wrap_line(row + 2,
-			&format!("Your podcast list is currently empty. Press {} to add a new podcast feed, {} to quit, or see all available commands by typing {} to get help.", key_strs[0], key_strs[1], key_strs[2]), None);
+		row = welcome_win.write_wrap_line(
+			row + 2,
+			&format!(
+				"Your podcast list is currently empty. Press {} to add a new podcast feed, {} to quit, or see all available commands by typing {} to get help.",
+				key_strs[0], key_strs[1], key_strs[2]
+			),
+			None
+		);
 
 		row = welcome_win.write_wrap_line(
 			row + 2,
@@ -234,7 +244,10 @@ impl<'a> PopupWin<'a>
 					{
 						0 => format!("{:>21} <missing>", action_str),
 						1 => format!("{:>21} \"{}\"", action_str, &keys[0]),
-						_ => format!("{:>21} \"{}\" or \"{}\"", action_str, &keys[0], &keys[1]),
+						_ => format!(
+							"{:>21} \"{}\" or \"{}\"",
+							action_str, &keys[0], &keys[1]
+						),
 					};
 					key_strs.push(key_str);
 				}
@@ -311,13 +324,20 @@ impl<'a> PopupWin<'a>
 			row += 1;
 		}
 
-		let _ = help_win.write_wrap_line(row + 2, "Press \"q\" to close this window.", None);
+		let _ = help_win.write_wrap_line(
+			row + 2,
+			"Press \"q\" to close this window.",
+			None
+		);
 		return help_win;
 	}
 
 	/// Create a new download window and draw it to the screen.
-	pub fn spawn_download_win(&mut self, episodes: Vec<NewEpisode>, selected: bool)
-	{
+	pub fn spawn_download_win(
+		&mut self,
+		episodes: Vec<NewEpisode>,
+		selected: bool
+	) {
 		for mut ep in episodes
 		{
 			ep.selected = selected;

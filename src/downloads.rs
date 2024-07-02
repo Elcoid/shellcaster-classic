@@ -60,7 +60,9 @@ pub fn download_list(
 
 /// Downloads a file to a local filepath, returning DownloadMsg variant
 /// indicating success or failure.
-fn download_file(mut ep_data: EpData, dest: PathBuf, mut max_retries: usize) -> DownloadMsg
+fn download_file(
+	mut ep_data: EpData, dest: PathBuf, mut max_retries: usize
+) -> DownloadMsg
 {
 	let agent_builder = ureq::builder()
 		.timeout_connect(Duration::from_secs(10))
@@ -108,7 +110,8 @@ fn download_file(mut ep_data: EpData, dest: PathBuf, mut max_retries: usize) -> 
 
 	let mut file_name = sanitize_with_options(&ep_data.title, Options {
 		truncate: true,
-		windows: true, // for simplicity, we'll just use Windows-friendly paths for everyone
+		// for simplicity, we'll just use Windows-friendly paths for everyone
+		windows: true,
 		replacement: "",
 	});
 

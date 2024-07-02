@@ -57,8 +57,9 @@ impl Panel
 		self.buffer = vec![String::new(); (self.n_row - 2) as usize];
 	}
 
-	pub fn write_line(&mut self, y: u16, string: String, _style: Option<style::ContentStyle>)
-	{
+	pub fn write_line(
+		&mut self, y: u16, string: String, _style: Option<style::ContentStyle>
+	) {
 		self.buffer[y as usize] = string;
 	}
 

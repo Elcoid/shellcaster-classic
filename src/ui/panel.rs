@@ -173,8 +173,12 @@ impl Panel
 	/// checking for line length, so strings that are too long will end
 	/// up wrapping and may mess up the format. Use `write_wrap_line()`
 	/// if you need line wrapping.
-	pub fn write_line(&self, y: u16, string: String, style: Option<style::ContentStyle>)
-	{
+	pub fn write_line(
+		&self,
+		y: u16,
+		string: String,
+		style: Option<style::ContentStyle>
+	) {
 		let styled = match style
 		{
 			Some(style) => style.apply(string),
@@ -207,7 +211,10 @@ impl Panel
 		key.push(':');
 		value.insert(0, ' ');
 
-		queue!(io::stdout(), cursor::MoveTo(self.abs_x(0), self.abs_y(y))).unwrap();
+		queue!(
+			io::stdout(),
+			cursor::MoveTo(self.abs_x(0), self.abs_y(y))
+		).unwrap();
 
 		let key_styled = match key_style
 		{

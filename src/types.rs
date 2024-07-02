@@ -66,7 +66,10 @@ impl Menuable for Podcast {
 		// if the size available is big enough, we add the unplayed data
 		// to the end
 		if length > crate::config::PODCAST_UNPLAYED_TOTALS_LENGTH {
-			let meta_str = format!("({}/{})", self.num_unplayed(), self.episodes.len(false));
+			let meta_str = format!(
+				"({}/{})",
+				self.num_unplayed(), self.episodes.len(false)
+			);
 			title_length = length - meta_str.chars().count() - 3;
 
 			let out = self.title.substr(0, title_length);
@@ -178,7 +181,10 @@ impl Menuable for Episode {
 			else
 			{
 				// just print duration
-				let out_added = out.substr(0, length - meta_dur.chars().count() - 3);
+				let out_added = out.substr(
+					0,
+					length - meta_dur.chars().count() - 3
+				);
 				return format!(
 					" {out_added} {meta_dur:>width$} ",
 					width = length - out_added.grapheme_len() - 3

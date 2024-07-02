@@ -55,7 +55,9 @@ impl DetailsPanel
 		margins: (u16, u16, u16, u16),
 	) -> Self
 	{
-		let panel = Panel::new(title, screen_pos, colors, n_row, n_col, start_x, margins);
+		let panel = Panel::new(
+			title, screen_pos, colors, n_row, n_col, start_x, margins
+		);
 		return Self {
 			panel: panel,
 			details: None,
@@ -129,7 +131,10 @@ impl DetailsPanel
 				{
 					return;
 				}
-				let move_dist = std::cmp::min(v, total_rows - self.top_row - n_row);
+				let move_dist = std::cmp::min(
+					v,
+					total_rows - self.top_row - n_row
+				);
 				self.top_row += move_dist;
 				if self.top_row != old_top_row
 				{
@@ -230,19 +235,28 @@ impl DetailsPanel
 					for line in wrapper
 					{
 						self.content
-							.push(DetailsLine::Line(line.to_string(), Some(bold)));
+							.push(
+								DetailsLine::Line(
+									line.to_string(),
+									Some(bold)
+								)
+							);
 					}
 					let wrapper = textwrap::wrap(desc, num_cols);
 					for line in wrapper
 					{
-						self.content.push(DetailsLine::Line(line.to_string(), None));
+						self.content.push(
+							DetailsLine::Line(line.to_string(), None)
+						);
 					}
 				}
 				None => {
 					let wrapper = textwrap::wrap("No description.", num_cols);
 					for line in wrapper
 					{
-						self.content.push(DetailsLine::Line(line.to_string(), None));
+						self.content.push(
+							DetailsLine::Line(line.to_string(), None)
+						);
 					}
 				}
 			}
@@ -264,7 +278,9 @@ impl DetailsPanel
 						row = self.panel.write_wrap_line(row, text, *style);
 						row += 1;
 					}
-					DetailsLine::KeyValueLine((key, key_style), (val, val_style)) => {
+					DetailsLine::KeyValueLine(
+						(key, key_style), (val, val_style)
+					) => {
 						self.panel.write_key_value_line(
 							row,
 							key.clone(),
