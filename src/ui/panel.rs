@@ -26,7 +26,8 @@ pub const BOTTOM_TEE: &str = "┴";
 /// Panel (i.e., x = 0 and y = 0 represent the top-left printable
 /// cell in the window).
 #[derive(Debug)]
-pub struct Panel {
+pub struct Panel
+{
 	screen_pos: usize,
 	pub colors: Rc<AppColors>,
 	title: String,
@@ -36,7 +37,8 @@ pub struct Panel {
 	margins: (u16, u16, u16, u16),
 }
 
-impl Panel {
+impl Panel
+{
 	/// Creates a new panel.
 	pub fn new(
 		title: String,
@@ -46,7 +48,8 @@ impl Panel {
 		n_col: u16,
 		start_x: u16,
 		margins: (u16, u16, u16, u16),
-	) -> Self {
+	) -> Self
+	{
 		return Panel {
 			screen_pos: screen_pos,
 			colors: colors,
@@ -59,16 +62,19 @@ impl Panel {
 	}
 
 	/// Redraws borders and refreshes the window to display on terminal.
-	pub fn redraw(&self) {
+	pub fn redraw(&self)
+	{
 		self.clear();
 		self.draw_border();
 	}
 
 	/// Clears the whole Panel.
-	pub fn clear(&self) {
+	pub fn clear(&self)
+	{
 		let empty = vec![" "; self.n_col as usize];
 		let empty_string = empty.join("");
-		for r in 0..(self.n_row - 1) {
+		for r in 0..(self.n_row - 1)
+		{
 			queue!(
 				io::stdout(),
 				cursor::MoveTo(self.start_x, r),
@@ -84,10 +90,12 @@ impl Panel {
 
 	/// Clears the inner section of the Panel, leaving the borders
 	/// intact.
-	pub fn clear_inner(&self) {
+	pub fn clear_inner(&self)
+	{
 		let empty = vec![" "; self.n_col as usize - 2];
 		let empty_string = empty.join("");
-		for r in 1..(self.n_row - 1) {
+		for r in 1..(self.n_row - 1)
+		{
 			queue!(
 				io::stdout(),
 				cursor::MoveTo(self.start_x + 1, r),
@@ -102,10 +110,12 @@ impl Panel {
 	}
 
 	/// Draws a border around the window.
-	fn draw_border(&self) {
+	fn draw_border(&self)
+	{
 		let top_left;
 		let bot_left;
-		match self.screen_pos {
+		match self.screen_pos
+		{
 			0 => {
 				top_left = TOP_LEFT;
 				bot_left = BOTTOM_LEFT;
@@ -117,7 +127,8 @@ impl Panel {
 		}
 		let mut border_top = vec![top_left];
 		let mut border_bottom = vec![bot_left];
-		for _ in 0..(self.n_col - 2) {
+		for _ in 0..(self.n_col - 2)
+		{
 			border_top.push(HORIZONTAL);
 			border_bottom.push(HORIZONTAL);
 		}
@@ -137,7 +148,8 @@ impl Panel {
 		)
 		.unwrap();
 
-		for r in 1..(self.n_row - 1) {
+		for r in 1..(self.n_row - 1)
+		{
 			queue!(
 				io::stdout(),
 				cursor::MoveTo(self.start_x, r),
@@ -161,8 +173,10 @@ impl Panel {
 	/// checking for line length, so strings that are too long will end
 	/// up wrapping and may mess up the format. Use `write_wrap_line()`
 	/// if you need line wrapping.
-	pub fn write_line(&self, y: u16, string: String, style: Option<style::ContentStyle>) {
-		let styled = match style {
+	pub fn write_line(&self, y: u16, string: String, style: Option<style::ContentStyle>)
+	{
+		let styled = match style
+		{
 			Some(style) => style.apply(string),
 			None => style::style(string)
 				.with(self.colors.normal.0)
@@ -195,14 +209,16 @@ impl Panel {
 
 		queue!(io::stdout(), cursor::MoveTo(self.abs_x(0), self.abs_y(y))).unwrap();
 
-		let key_styled = match key_style {
+		let key_styled = match key_style
+		{
 			Some(kstyle) => kstyle.apply(key),
 			None => style::style(key)
 				.with(self.colors.normal.0)
 				.on(self.colors.normal.1),
 		};
 		queue!(io::stdout(), style::PrintStyledContent(key_styled)).unwrap();
-		let value_styled = match value_style {
+		let value_styled = match value_style
+		{
 			Some(vstyle) => vstyle.apply(value),
 			None => style::style(value)
 				.with(self.colors.normal.0)
@@ -220,20 +236,24 @@ impl Panel {
 		start_y: u16,
 		string: &str,
 		style: Option<style::ContentStyle>,
-	) -> u16 {
+	) -> u16
+	{
 		let mut row = start_y;
 		let max_row = self.get_rows();
-		if row >= max_row {
+		if row >= max_row
+		{
 			return row;
 		}
-		let content_style = match style {
+		let content_style = match style
+		{
 			Some(style) => style,
 			None => style::ContentStyle::new()
 				.with(self.colors.normal.0)
 				.on(self.colors.normal.1),
 		};
 		let wrapper = textwrap::wrap(string, self.get_cols() as usize);
-		for line in wrapper {
+		for line in wrapper
+		{
 			queue!(
 				io::stdout(),
 				cursor::MoveTo(self.abs_x(0), self.abs_y(row)),
@@ -242,7 +262,8 @@ impl Panel {
 			.unwrap();
 			row += 1;
 
-			if row >= max_row {
+			if row >= max_row
+			{
 				break;
 			}
 		}
@@ -250,7 +271,8 @@ impl Panel {
 	}
 
 	/// Updates window size.
-	pub fn resize(&mut self, n_row: u16, n_col: u16, start_x: u16) {
+	pub fn resize(&mut self, n_row: u16, n_col: u16, start_x: u16)
+	{
 		self.n_row = n_row;
 		self.n_col = n_col;
 		self.start_x = start_x;
@@ -258,27 +280,31 @@ impl Panel {
 
 	/// Returns the effective number of rows (accounting for borders
 	/// and margins).
-	pub fn get_rows(&self) -> u16 {
+	pub fn get_rows(&self) -> u16
+	{
 		// 2 for borders on top and bottom
 		return self.n_row - self.margins.0 - self.margins.2 - 2;
 	}
 
 	/// Returns the effective number of columns (accounting for
 	/// borders and margins).
-	pub fn get_cols(&self) -> u16 {
+	pub fn get_cols(&self) -> u16
+	{
 		// 2 for borders on left and right
 		return self.n_col - self.margins.1 - self.margins.3 - 2;
 	}
 
 	/// Calculates the y-value relative to the terminal rather than to
 	/// the panel (i.e., taking into account borders and margins).
-	fn abs_y(&self, y: u16) -> u16 {
+	fn abs_y(&self, y: u16) -> u16
+	{
 		return y + self.margins.0 + 1;
 	}
 
 	/// Calculates the x-value relative to the terminal rather than to
 	/// the panel (i.e., taking into account borders and margins).
-	fn abs_x(&self, x: u16) -> u16 {
+	fn abs_x(&self, x: u16) -> u16
+	{
 		return x + self.start_x + self.margins.3 + 1;
 	}
 }

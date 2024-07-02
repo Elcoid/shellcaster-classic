@@ -147,19 +147,23 @@ impl Menuable for Episode {
 	}
 
 	/// Returns the title for the episode, up to length characters.
-	fn get_title(&self, length: usize) -> String {
-		let out = match self.path {
+	fn get_title(&self, length: usize) -> String
+	{
+		let out = match self.path
+		{
 			Some(_) => {
 				let title = self.title.substr(0, length - 4);
 				format!("[D] {title}")
 			}
 			None => self.title.substr(0, length),
 		};
-		if length > crate::config::EPISODE_PUBDATE_LENGTH {
+		if length > crate::config::EPISODE_PUBDATE_LENGTH
+		{
 			let dur = self.format_duration();
 			let meta_dur = format!("[{dur}]");
 
-			if let Some(pubdate) = self.pubdate {
+			if let Some(pubdate) = self.pubdate
+			{
 				// print pubdate and duration
 				let pd = pubdate.format("%F");
 				let meta_str = format!("({pd}) {meta_dur}");
@@ -170,7 +174,9 @@ impl Menuable for Episode {
 					" {out_added} {meta_str:>width$} ",
 					width = length - out_added.grapheme_len() - 3
 				);
-			} else {
+			}
+			else
+			{
 				// just print duration
 				let out_added = out.substr(0, length - meta_dur.chars().count() - 3);
 				return format!(
@@ -178,7 +184,9 @@ impl Menuable for Episode {
 					width = length - out_added.grapheme_len() - 3
 				);
 			}
-		} else if length > crate::config::EPISODE_DURATION_LENGTH {
+		}
+		else if length > crate::config::EPISODE_DURATION_LENGTH
+		{
 			let dur = self.format_duration();
 			let meta_dur = format!("[{dur}]");
 			let out_added = out.substr(0, length - meta_dur.chars().count() - 3);
@@ -186,12 +194,15 @@ impl Menuable for Episode {
 				" {out_added} {meta_dur:>width$} ",
 				width = length - out_added.grapheme_len() - 3
 			);
-		} else {
+		}
+		else
+		{
 			return format!(" {} ", out.substr(0, length - 2));
 		}
 	}
 
-	fn is_played(&self) -> bool {
+	fn is_played(&self) -> bool
+	{
 		return self.played;
 	}
 }
@@ -201,7 +212,8 @@ impl Menuable for Episode {
 /// been inserted into the database. This includes a
 /// (possibly empty) vector of episodes.
 #[derive(Debug, Clone)]
-pub struct PodcastNoId {
+pub struct PodcastNoId
+{
 	pub title: String,
 	pub url: String,
 	pub description: Option<String>,
@@ -214,7 +226,8 @@ pub struct PodcastNoId {
 /// Struct holding data about an individual podcast episode, before it
 /// has been inserted into the database.
 #[derive(Debug, Clone)]
-pub struct EpisodeNoId {
+pub struct EpisodeNoId
+{
 	pub title: String,
 	pub url: String,
 	pub guid: String,
@@ -227,7 +240,8 @@ pub struct EpisodeNoId {
 /// for the popup window that asks users which new episodes they wish to
 /// download.
 #[derive(Debug, Clone)]
-pub struct NewEpisode {
+pub struct NewEpisode
+{
 	pub id: i64,
 	pub pod_id: i64,
 	pub title: String,
@@ -235,22 +249,28 @@ pub struct NewEpisode {
 	pub selected: bool,
 }
 
-impl Menuable for NewEpisode {
+impl Menuable for NewEpisode
+{
 	/// Returns the database ID for the episode.
-	fn get_id(&self) -> i64 {
+	fn get_id(&self) -> i64
+	{
 		return self.id;
 	}
 
 	/// Returns the title for the episode, up to length characters.
-	fn get_title(&self, length: usize) -> String {
+	fn get_title(&self, length: usize) -> String
+	{
 		let selected = if self.selected { "✓" } else { " " };
 
 		let title_len = self.title.grapheme_len();
 		let pod_title_len = self.pod_title.grapheme_len();
-		let empty_string = if length > title_len + pod_title_len + 9 {
+		let empty_string = if length > title_len + pod_title_len + 9
+		{
 			let empty = vec![" "; length - title_len - pod_title_len - 9];
 			empty.join("")
-		} else {
+		}
+		else
+		{
 			"".to_string()
 		};
 
@@ -261,7 +281,8 @@ impl Menuable for NewEpisode {
 		return full_string.substr(0, length);
 	}
 
-	fn is_played(&self) -> bool {
+	fn is_played(&self) -> bool
+	{
 		return true;
 	}
 }
@@ -289,18 +310,22 @@ where T: Clone + Menuable
 	filtered_order: Arc<Mutex<Vec<i64>>>,
 }
 
-impl<T: Clone + Menuable> LockVec<T> {
+impl<T: Clone + Menuable> LockVec<T>
+{
 	/// Create a new LockVec.
-	pub fn new(data: Vec<T>) -> LockVec<T> {
+	pub fn new(data: Vec<T>) -> LockVec<T>
+	{
 		let mut hm = HashMap::with_hasher(BuildNoHashHasher::default());
 		let mut order = Vec::new();
-		for i in data.into_iter() {
+		for i in data.into_iter()
+		{
 			let id = i.get_id();
 			hm.insert(i.get_id(), i);
 			order.push(id);
 		}
 
-		return LockVec {
+		return LockVec
+		{
 			data: Arc::new(Mutex::new(hm)),
 			order: Arc::new(Mutex::new(order.clone())),
 			filtered_order: Arc::new(Mutex::new(order)),
@@ -308,17 +333,20 @@ impl<T: Clone + Menuable> LockVec<T> {
 	}
 
 	/// Lock the LockVec hashmap for reading/writing.
-	pub fn borrow_map(&self) -> MutexGuard<HashMap<i64, T, BuildNoHashHasher<i64>>> {
+	pub fn borrow_map(&self) -> MutexGuard<HashMap<i64, T, BuildNoHashHasher<i64>>>
+	{
 		return self.data.lock().expect("Mutex error");
 	}
 
 	/// Lock the LockVec order vector for reading/writing.
-	pub fn borrow_order(&self) -> MutexGuard<Vec<i64>> {
+	pub fn borrow_order(&self) -> MutexGuard<Vec<i64>>
+	{
 		return self.order.lock().expect("Mutex error");
 	}
 
 	/// Lock the LockVec filtered order vector for reading/writing.
-	pub fn borrow_filtered_order(&self) -> MutexGuard<Vec<i64>> {
+	pub fn borrow_filtered_order(&self) -> MutexGuard<Vec<i64>>
+	{
 		return self.filtered_order.lock().expect("Mutex error");
 	}
 
@@ -340,13 +368,15 @@ impl<T: Clone + Menuable> LockVec<T> {
 
 	/// Given an id, this takes a new T and replaces the old T with that
 	/// id.
-	pub fn replace(&self, id: i64, t: T) {
+	pub fn replace(&self, id: i64, t: T)
+	{
 		let mut borrowed = self.borrow_map();
 		borrowed.insert(id, t);
 	}
 
 	/// Empty out and replace all the data in the LockVec.
-	pub fn replace_all(&self, data: Vec<T>) {
+	pub fn replace_all(&self, data: Vec<T>)
+	{
 		let (mut map, mut order, mut filtered_order) = self.borrow();
 		map.clear();
 		order.clear();
@@ -364,14 +394,18 @@ impl<T: Clone + Menuable> LockVec<T> {
 	/// alive, the function returns a Vec of the collected results,
 	/// rather than an iterator.
 	pub fn map<B, F>(&self, mut f: F, filtered: bool) -> Vec<B>
-	where F: FnMut(&T) -> B {
+	where F: FnMut(&T) -> B
+	{
 		let (map, order, filtered_order) = self.borrow();
-		if filtered {
+		if filtered
+		{
 			return filtered_order
 				.iter()
 				.map(|id| f(map.get(id).expect("Index error in LockVec")))
 				.collect();
-		} else {
+		}
+		else
+		{
 			return order
 				.iter()
 				.map(|id| f(map.get(id).expect("Index error in LockVec")))
@@ -382,9 +416,11 @@ impl<T: Clone + Menuable> LockVec<T> {
 	/// Maps a closure to a single element in the LockVec, specified by
 	/// `id`. If there is no element `id`, this returns None.
 	pub fn map_single<B, F>(&self, id: i64, f: F) -> Option<B>
-	where F: FnOnce(&T) -> B {
+	where F: FnOnce(&T) -> B
+	{
 		let borrowed = self.borrow_map();
-		return match borrowed.get(&id) {
+		return match borrowed.get(&id)
+		{
 			Some(item) => Some(f(item)),
 			None => return None,
 		};
@@ -394,9 +430,11 @@ impl<T: Clone + Menuable> LockVec<T> {
 	/// `index` (position order). If there is no element at that index,
 	/// this returns None.
 	pub fn map_single_by_index<B, F>(&self, index: usize, f: F) -> Option<B>
-	where F: FnOnce(&T) -> B {
+	where F: FnOnce(&T) -> B
+	{
 		let order = self.borrow_filtered_order();
-		return match order.get(index) {
+		return match order.get(index)
+		{
 			Some(id) => self.map_single(*id, f),
 			None => None,
 		};
@@ -415,7 +453,8 @@ impl<T: Clone + Menuable> LockVec<T> {
 	/// filters to show only selected podcasts/episodes, but this is
 	/// *not* the sense of the word here.
 	pub fn filter_map<B, F>(&self, mut f: F) -> Vec<B>
-	where F: FnMut(&T) -> Option<B> {
+	where F: FnMut(&T) -> Option<B>
+	{
 		let (map, order, _unused) = self.borrow();
 		drop(_unused);
 		return order
@@ -425,21 +464,27 @@ impl<T: Clone + Menuable> LockVec<T> {
 	}
 
 	/// Returns the number of items in the LockVec.
-	pub fn len(&self, filtered: bool) -> usize {
-		if filtered {
+	pub fn len(&self, filtered: bool) -> usize
+	{
+		if filtered
+		{
 			return self.borrow_filtered_order().len();
-		} else {
+		}
+		else
+		{
 			return self.borrow_order().len();
 		}
 	}
 
 	/// Returns whether or not there are any items in the LockVec.
-	pub fn is_empty(&self) -> bool {
+	pub fn is_empty(&self) -> bool
+	{
 		return self.borrow_order().is_empty();
 	}
 }
 
-impl<T: Clone + Menuable> Clone for LockVec<T> {
+impl<T: Clone + Menuable> Clone for LockVec<T>
+{
 	fn clone(&self) -> Self {
 		return LockVec {
 			data: Arc::clone(&self.data),
@@ -449,9 +494,11 @@ impl<T: Clone + Menuable> Clone for LockVec<T> {
 	}
 }
 
-impl LockVec<Podcast> {
+impl LockVec<Podcast>
+{
 	/// This clones the podcast with the given id.
-	pub fn clone_podcast(&self, id: i64) -> Option<Podcast> {
+	pub fn clone_podcast(&self, id: i64) -> Option<Podcast>
+	{
 		let pod_map = self.borrow_map();
 		return pod_map.get(&id).cloned();
 	}
@@ -460,20 +507,24 @@ impl LockVec<Podcast> {
 	/// the podcast with the given id (`pod_id`). Note that if you
 	/// are already borrowing the episode list for a podcast, you can
 	/// also use `clone_episode()` directly on that list.
-	pub fn clone_episode(&self, pod_id: i64, ep_id: i64) -> Option<Episode> {
+	pub fn clone_episode(&self, pod_id: i64, ep_id: i64) -> Option<Episode>
+	{
 		let pod_map = self.borrow_map();
-		if let Some(pod) = pod_map.get(&pod_id) {
+		if let Some(pod) = pod_map.get(&pod_id)
+		{
 			return pod.episodes.clone_episode(ep_id);
 		}
 		return None;
 	}
 }
 
-impl LockVec<Episode> {
+impl LockVec<Episode>
+{
 	/// This clones the episode with the given id (`ep_id`). Note
 	/// that `clone_episode()` is also implemented for LockVec<Podcast>,
 	/// and can be used at that level as well if given a podcast id.
-	pub fn clone_episode(&self, ep_id: i64) -> Option<Episode> {
+	pub fn clone_episode(&self, ep_id: i64) -> Option<Episode>
+	{
 		let ep_map = self.borrow_map();
 		return ep_map.get(&ep_id).cloned();
 	}
@@ -483,7 +534,8 @@ impl LockVec<Episode> {
 /// Overarching Message enum that allows multiple threads to communicate
 /// back to the main thread with a single enum type.
 #[derive(Debug)]
-pub enum Message {
+pub enum Message
+{
 	Ui(UiMsg),
 	Feed(FeedMsg),
 	Dl(DownloadMsg),
@@ -493,7 +545,8 @@ pub enum Message {
 /// Simple enum to designate the status of a filter. "Positive" and
 /// "Negative" cases represent, e.g., "played" vs. "unplayed".
 #[derive(Debug, Clone, Copy)]
-pub enum FilterStatus {
+pub enum FilterStatus
+{
 	PositiveCases,
 	NegativeCases,
 	All,
@@ -501,21 +554,26 @@ pub enum FilterStatus {
 
 /// Enum to identify which filters has been changed
 #[derive(Debug, Clone, Copy)]
-pub enum FilterType {
+pub enum FilterType
+{
 	Played,
 	Downloaded,
 }
 
 /// Struct holding information about all active filters.
 #[derive(Debug, Clone, Copy)]
-pub struct Filters {
+pub struct Filters
+{
 	pub played: FilterStatus,
 	pub downloaded: FilterStatus,
 }
 
-impl Default for Filters {
-	fn default() -> Self {
-		return Self {
+impl Default for Filters
+{
+	fn default() -> Self
+	{
+		return Self
+		{
 			played: FilterStatus::All,
 			downloaded: FilterStatus::All,
 		};
@@ -524,15 +582,18 @@ impl Default for Filters {
 
 
 /// Some helper functions for dealing with Unicode strings.
-pub trait StringUtils {
+pub trait StringUtils
+{
 	fn substr(&self, start: usize, length: usize) -> String;
 	fn grapheme_len(&self) -> usize;
 }
 
-impl StringUtils for String {
+impl StringUtils for String
+{
 	/// Takes a slice of the String, properly separated at Unicode
 	/// grapheme boundaries. Returns a new String.
-	fn substr(&self, start: usize, length: usize) -> String {
+	fn substr(&self, start: usize, length: usize) -> String
+	{
 		return self
 			.graphemes(true)
 			.skip(start)
@@ -541,7 +602,8 @@ impl StringUtils for String {
 	}
 
 	/// Counts the total number of Unicode graphemes in the String.
-	fn grapheme_len(&self) -> usize {
+	fn grapheme_len(&self) -> usize
+	{
 		return self.graphemes(true).count();
 	}
 }

@@ -12,7 +12,8 @@ use rss::{Channel, Item};
 use crate::threadpool::Threadpool;
 use crate::types::*;
 
-lazy_static! {
+lazy_static!
+{
 	/// Regex for parsing an episode "duration", which could take the form
 	/// of HH:MM:SS, MM:SS, or SS.
 	static ref RE_DURATION: Regex = Regex::new(r"(\d+)(?::(\d+))?(?::(\d+))?").expect("Regex error");
@@ -21,7 +22,8 @@ lazy_static! {
 /// Enum for communicating back to the main thread after feed data has
 /// been retrieved.
 #[derive(Debug)]
-pub enum FeedMsg {
+pub enum FeedMsg
+{
 	NewData(PodcastNoId),
 	SyncData((i64, PodcastNoId)),
 	Error(PodcastFeed),
@@ -30,14 +32,17 @@ pub enum FeedMsg {
 /// Struct holding data about a podcast feed (subset of info about a
 /// podcast) for the purpose of passing back and forth between threads.
 #[derive(Debug, Clone)]
-pub struct PodcastFeed {
+pub struct PodcastFeed
+{
 	pub id: Option<i64>,
 	pub url: String,
 	pub title: Option<String>,
 }
 
-impl PodcastFeed {
-	pub fn new(id: Option<i64>, url: String, title: Option<String>) -> Self {
+impl PodcastFeed
+{
+	pub fn new(id: Option<i64>, url: String, title: Option<String>) -> Self
+	{
 		return Self {
 			id: id,
 			url: url,
@@ -53,8 +58,10 @@ pub fn check_feed(
 	threadpool: &Threadpool,
 	tx_to_main: mpsc::Sender<Message>,
 ) {
-	threadpool.execute(move || match get_feed_data(feed.url.clone(), max_retries) {
-		Ok(pod) => match feed.id {
+	threadpool.execute(move || match get_feed_data(feed.url.clone(), max_retries)
+	{
+		Ok(pod) => match feed.id
+		{
 			Some(id) => {
 				tx_to_main
 					.send(Message::Feed(FeedMsg::SyncData((id, pod))))
@@ -72,7 +79,8 @@ pub fn check_feed(
 
 /// Given a URL, this attempts to pull the data about a podcast and its
 /// episodes from an RSS feed.
-fn get_feed_data(url: String, mut max_retries: usize) -> Result<PodcastNoId> {
+fn get_feed_data(url: String, mut max_retries: usize) -> Result<PodcastNoId>
+{
 	let agent_builder = ureq::builder()
 		.timeout_connect(Duration::from_secs(5))
 		.timeout_read(Duration::from_secs(20));
@@ -82,20 +90,24 @@ fn get_feed_data(url: String, mut max_retries: usize) -> Result<PodcastNoId> {
 	let agent_builder = agent_builder.tls_connector(tls_connector);
 	let agent = agent_builder.build();
 
-	let request: Result<ureq::Response> = loop {
+	let request: Result<ureq::Response> = loop
+	{
 		let response = agent.get(&url).call();
-		match response {
+		match response
+		{
 			Ok(resp) => break Ok(resp),
 			Err(_) => {
 				max_retries -= 1;
-				if max_retries == 0 {
+				if max_retries == 0
+				{
 					break Err(anyhow!("No response from feed"));
 				}
 			}
 		}
 	};
 
-	return match request {
+	return match request
+	{
 		Ok(resp) => {
 			let mut reader = resp.into_reader();
 			let mut resp_data = Vec::new();
@@ -114,7 +126,8 @@ fn get_feed_data(url: String, mut max_retries: usize) -> Result<PodcastNoId> {
 /// specifications for podcast RSS feeds that a feed should adhere to, but
 /// this does try to make some attempt to account for the possibility that
 /// a feed might not be valid according to the spec.
-fn parse_feed_data(channel: Channel, url: &str) -> PodcastNoId {
+fn parse_feed_data(channel: Channel, url: &str) -> PodcastNoId
+{
 	let title = channel.title().to_string();
 	let url = url.to_string();
 	let description = Some(channel.description().to_string());
@@ -122,13 +135,16 @@ fn parse_feed_data(channel: Channel, url: &str) -> PodcastNoId {
 
 	let mut author = None;
 	let mut explicit = None;
-	if let Some(itunes) = channel.itunes_ext() {
+	if let Some(itunes) = channel.itunes_ext()
+	{
 		author = itunes.author().map(|a| a.to_string());
-		explicit = match itunes.explicit() {
+		explicit = match itunes.explicit()
+		{
 			None => None,
 			Some(s) => {
 				let ss = s.to_lowercase();
-				match &ss[..] {
+				match &ss[..]
+				{
 					"yes" | "explicit" | "true" => Some(true),
 					"no" | "clean" | "false" => Some(false),
 					_ => None,
@@ -139,8 +155,10 @@ fn parse_feed_data(channel: Channel, url: &str) -> PodcastNoId {
 
 	let mut episodes = Vec::new();
 	let items = channel.into_items();
-	if !items.is_empty() {
-		for item in &items {
+	if !items.is_empty()
+	{
+		for item in &items
+		{
 			episodes.push(parse_episode_data(item));
 		}
 	}
@@ -161,25 +179,32 @@ fn parse_feed_data(channel: Channel, url: &str) -> PodcastNoId {
 /// podcast RSS feeds that a feed should adhere to, but this does try to
 /// make some attempt to account for the possibility that a feed might
 /// not be valid according to the spec.
-fn parse_episode_data(item: &Item) -> EpisodeNoId {
-	let title = match item.title() {
+fn parse_episode_data(item: &Item) -> EpisodeNoId
+{
+	let title = match item.title()
+	{
 		Some(s) => s.to_string(),
 		None => "".to_string(),
 	};
-	let url = match item.enclosure() {
+	let url = match item.enclosure()
+	{
 		Some(enc) => enc.url().to_string(),
 		None => "".to_string(),
 	};
-	let guid = match item.guid() {
+	let guid = match item.guid()
+	{
 		Some(guid) => guid.value().to_string(),
 		None => "".to_string(),
 	};
-	let description = match item.description() {
+	let description = match item.description()
+	{
 		Some(dsc) => dsc.to_string(),
 		None => "".to_string(),
 	};
-	let pubdate = match item.pub_date() {
-		Some(pd) => match parse_from_rfc2822_with_fallback(pd) {
+	let pubdate = match item.pub_date()
+	{
+		Some(pd) => match parse_from_rfc2822_with_fallback(pd)
+		{
 			Ok(date) => {
 				// this is a bit ridiculous, but it seems like
 				// you have to convert from a DateTime<FixedOffset>
@@ -194,7 +219,8 @@ fn parse_episode_data(item: &Item) -> EpisodeNoId {
 	};
 
 	let mut duration = None;
-	if let Some(itunes) = item.itunes_ext() {
+	if let Some(itunes) = item.itunes_ext()
+	{
 		duration = duration_to_int(itunes.duration()).map(|dur| dur as i64);
 	}
 
@@ -212,10 +238,13 @@ fn parse_episode_data(item: &Item) -> EpisodeNoId {
 /// convert to an integer representing the duration in seconds. Covers
 /// formats HH:MM:SS, MM:SS, and SS. If the duration cannot be converted
 /// (covering numerous reasons), it will return None.
-fn duration_to_int(duration: Option<&str>) -> Option<i32> {
-	match duration {
+fn duration_to_int(duration: Option<&str>) -> Option<i32>
+{
+	match duration
+	{
 		Some(dur) => {
-			match RE_DURATION.captures(dur) {
+			match RE_DURATION.captures(dur)
+			{
 				Some(cap) => {
 					/*
 					 * Provided that the regex succeeds, we should have
@@ -233,16 +262,21 @@ fn duration_to_int(duration: Option<&str>) -> Option<i32> {
 					let mut times = [None; 3];
 					let mut counter = 0;
 					// cap[0] is always full match
-					for c in cap.iter().skip(1).flatten() {
-						if let Ok(intval) = regex_to_int(c) {
+					for c in cap.iter().skip(1).flatten()
+					{
+						if let Ok(intval) = regex_to_int(c)
+						{
 							times[counter] = Some(intval);
 							counter += 1;
-						} else {
+						}
+						else
+						{
 							return None;
 						}
 					}
 
-					return match counter {
+					return match counter
+					{
 						// HH:MM:SS
 						3 => Some(
 							times[0].unwrap() * 60 * 60
@@ -265,7 +299,8 @@ fn duration_to_int(duration: Option<&str>) -> Option<i32> {
 
 /// Helper function converting a match from a regex capture group into an
 /// integer.
-fn regex_to_int(re_match: Match) -> Result<i32, std::num::ParseIntError> {
+fn regex_to_int(re_match: Match) -> Result<i32, std::num::ParseIntError>
+{
 	let mstr = re_match.as_str();
 	mstr.parse::<i32>()
 }
@@ -273,17 +308,20 @@ fn regex_to_int(re_match: Match) -> Result<i32, std::num::ParseIntError> {
 
 // TESTS -----------------------------------------------------------------
 #[cfg(test)]
-mod tests {
+mod tests
+{
 	use super::*;
 	use std::fs::File;
 	use std::io::BufReader;
 
-	fn open_file(path: &str) -> BufReader<File> {
+	fn open_file(path: &str) -> BufReader<File>
+	{
 		return BufReader::new(File::open(path).unwrap());
 	}
 
 	#[test]
-	fn no_description() {
+	fn no_description()
+	{
 		let path = "./tests/test_no_description.xml";
 		let channel = Channel::read_from(open_file(path)).unwrap();
 		let data = parse_feed_data(channel, "dummy_url");
@@ -291,7 +329,8 @@ mod tests {
 	}
 
 	#[test]
-	fn invalid_explicit() {
+	fn invalid_explicit()
+	{
 		let path = "./tests/test_inval_explicit.xml";
 		let channel = Channel::read_from(open_file(path)).unwrap();
 		let data = parse_feed_data(channel, "dummy_url");
@@ -299,7 +338,8 @@ mod tests {
 	}
 
 	#[test]
-	fn no_episodes() {
+	fn no_episodes()
+	{
 		let path = "./tests/test_no_episodes.xml";
 		let channel = Channel::read_from(open_file(path)).unwrap();
 		let data = parse_feed_data(channel, "dummy_url");
@@ -307,67 +347,78 @@ mod tests {
 	}
 
 	#[test]
-	fn nan_duration() {
+	fn nan_duration()
+	{
 		let duration = String::from("nan");
 		assert_eq!(duration_to_int(Some(&duration)), None);
 	}
 
 	#[test]
-	fn nonnumeric_duration() {
+	fn nonnumeric_duration()
+	{
 		let duration = String::from("some string");
 		assert_eq!(duration_to_int(Some(&duration)), None);
 	}
 
 	#[test]
-	fn duration_hhhmmss() {
+	fn duration_hhhmmss()
+	{
 		let duration = String::from("31:38:42");
 		assert_eq!(duration_to_int(Some(&duration)), Some(113922));
 	}
 
 	#[test]
-	fn duration_hhmmss() {
+	fn duration_hhmmss()
+	{
 		let duration = String::from("01:38:42");
 		assert_eq!(duration_to_int(Some(&duration)), Some(5922));
 	}
 
 	#[test]
-	fn duration_hmmss() {
+	fn duration_hmmss()
+	{
 		let duration = String::from("1:38:42");
 		assert_eq!(duration_to_int(Some(&duration)), Some(5922));
 	}
 
 	#[test]
-	fn duration_mmmss() {
+	fn duration_mmmss()
+	{
 		let duration = String::from("68:42");
 		assert_eq!(duration_to_int(Some(&duration)), Some(4122));
 	}
 
 	#[test]
-	fn duration_mmss() {
+	fn duration_mmss()
+	{
 		let duration = String::from("08:42");
 		assert_eq!(duration_to_int(Some(&duration)), Some(522));
 	}
 
 	#[test]
-	fn duration_mss() {
+	fn duration_mss()
+	{
 		let duration = String::from("8:42");
 		assert_eq!(duration_to_int(Some(&duration)), Some(522));
 	}
 
 	#[test]
-	fn duration_sss() {
+	fn duration_sss()
+	{
 		let duration = String::from("142");
 		assert_eq!(duration_to_int(Some(&duration)), Some(142));
 	}
 
 	#[test]
-	fn duration_ss() {
+	fn duration_ss()
+	{
 		let duration = String::from("08");
 		assert_eq!(duration_to_int(Some(&duration)), Some(8));
 	}
 
 	#[test]
-	fn duration_s() {
+	fn duration_s()
+	{
 		let duration = String::from("8");
 		assert_eq!(duration_to_int(Some(&duration)), Some(8));
 	}

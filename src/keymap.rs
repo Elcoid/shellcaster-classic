@@ -6,7 +6,8 @@ use crate::config::KeybindingsFromToml;
 /// Enum delineating all actions that may be performed by the user, and
 /// thus have keybindings associated with them.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum UserAction {
+pub enum UserAction
+{
 	Left,
 	Right,
 	Up,
@@ -47,17 +48,21 @@ pub enum UserAction {
 #[derive(Debug, Clone)]
 pub struct Keybindings(AHashMap<String, UserAction>);
 
-impl Keybindings {
+impl Keybindings
+{
 	/// Returns a new Keybindings struct.
-	pub fn new() -> Self {
+	pub fn new() -> Self
+	{
 		return Self(AHashMap::new());
 	}
 
 	/// Returns a Keybindings struct with all default values set.
-	pub fn default() -> Self {
+	pub fn default() -> Self
+	{
 		let defaults = Self::_defaults();
 		let mut keymap = Self::new();
-		for (action, defaults) in defaults.into_iter() {
+		for (action, defaults) in defaults.into_iter()
+		{
 			keymap.insert_from_vec(defaults, action);
 		}
 		return keymap;
@@ -66,7 +71,8 @@ impl Keybindings {
 	/// Given a struct deserialized from config.toml (for which any or
 	/// all fields may be missing), create a Keybindings struct using
 	/// user-defined keys where specified, and default values otherwise.
-	pub fn from_config(config: KeybindingsFromToml) -> Self {
+	pub fn from_config(config: KeybindingsFromToml) -> Self
+	{
 		let config_actions: Vec<(Option<Vec<String>>, UserAction)> = vec![
 			(config.left, UserAction::Left),
 			(config.right, UserAction::Right),
@@ -97,8 +103,10 @@ impl Keybindings {
 		];
 
 		let mut keymap = Self::default();
-		for (config, action) in config_actions.into_iter() {
-			if let Some(config) = config {
+		for (config, action) in config_actions.into_iter()
+		{
+			if let Some(config) = config
+			{
 				keymap.insert_from_vec(config, action);
 			}
 		}
@@ -107,8 +115,10 @@ impl Keybindings {
 
 	/// Takes an Input object from crossterm and returns the associated
 	/// user action, if one exists.
-	pub fn get_from_input(&self, input: KeyEvent) -> Option<&UserAction> {
-		match input_to_str(input) {
+	pub fn get_from_input(&self, input: KeyEvent) -> Option<&UserAction>
+	{
+		match input_to_str(input)
+		{
 			Some(code) => self.0.get(&code),
 			None => None,
 		}
@@ -116,22 +126,26 @@ impl Keybindings {
 
 	/// Inserts a new keybinding into the hash map. Will overwrite the
 	/// value of a key if it already exists.
-	pub fn insert(&mut self, code: String, action: UserAction) {
+	pub fn insert(&mut self, code: String, action: UserAction)
+	{
 		self.0.insert(code, action);
 	}
 
 	/// Inserts a set of new keybindings into the hash map, each one
 	/// corresponding to the same UserAction. Will overwrite the value
 	/// of keys that already exist.
-	pub fn insert_from_vec(&mut self, vec: Vec<String>, action: UserAction) {
-		for key in vec.into_iter() {
+	pub fn insert_from_vec(&mut self, vec: Vec<String>, action: UserAction)
+	{
+		for key in vec.into_iter()
+		{
 			self.insert(key, action);
 		}
 	}
 
 	/// Returns a Vec with all of the keys mapped to a particular user
 	/// action.
-	pub fn keys_for_action(&self, action: UserAction) -> Vec<String> {
+	pub fn keys_for_action(&self, action: UserAction) -> Vec<String>
+	{
 		return self
 			.0
 			.iter()
@@ -145,7 +159,8 @@ impl Keybindings {
 			.collect();
 	}
 
-	fn _defaults() -> Vec<(UserAction, Vec<String>)> {
+	fn _defaults() -> Vec<(UserAction, Vec<String>)>
+	{
 		return vec![
 			(UserAction::Left, vec!["Left".to_string(), "h".to_string()]),
 			(UserAction::Right, vec![
@@ -182,7 +197,8 @@ impl Keybindings {
 
 /// Helper function converting a crossterm KeyEvent object to a unique
 /// string representing that input.
-pub fn input_to_str(input: KeyEvent) -> Option<String> {
+pub fn input_to_str(input: KeyEvent) -> Option<String>
+{
 	let ctrl = if input.modifiers.intersects(KeyModifiers::CONTROL) {
 		"Ctrl+"
 	} else {
@@ -199,7 +215,8 @@ pub fn input_to_str(input: KeyEvent) -> Option<String> {
 		""
 	};
 	let mut tmp = [0; 4];
-	return match input.code {
+	return match input.code
+	{
 		KeyCode::Backspace => Some(format!("{ctrl}{alt}{shift}Backspace")),
 		KeyCode::Enter => Some(format!("{ctrl}{alt}{shift}Enter")),
 		KeyCode::Left => Some(format!("{ctrl}{alt}{shift}Left")),
@@ -217,15 +234,24 @@ pub fn input_to_str(input: KeyEvent) -> Option<String> {
 		KeyCode::Esc => Some(format!("{ctrl}{alt}{shift}Esc")),
 		KeyCode::F(num) => Some(format!("{ctrl}{alt}{shift}F{num}")), // Function keys
 		KeyCode::Char(c) => {
-			if c == '\u{7f}' {
+			if c == '\u{7f}'
+			{
 				Some(format!("{ctrl}{alt}{shift}Backspace"))
-			} else if c == '\u{1b}' {
+			}
+			else if c == '\u{1b}'
+			{
 				Some(format!("{ctrl}{alt}{shift}Esc"))
-			} else if c == '\n' {
+			}
+			else if c == '\n'
+			{
 				Some(format!("{ctrl}{alt}{shift}Enter"))
-			} else if c == '\t' {
+			}
+			else if c == '\t'
+			{
 				Some(format!("{ctrl}{alt}{shift}Tab"))
-			} else {
+			}
+			else
+			{
 				// here we don't include "shift" because that will
 				// already be encoded in the character itself
 				Some(format!("{}{}{}", ctrl, alt, c.encode_utf8(&mut tmp)))

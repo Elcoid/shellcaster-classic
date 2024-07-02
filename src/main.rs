@@ -55,7 +55,8 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 /// *Export subcommand:*
 /// Connects to the sqlite database, and reads all podcasts into an OPML
 /// file, with the location specified from the command line arguments.
-fn main() -> Result<()> {
+fn main() -> Result<()>
+{
 	// SETUP -----------------------------------------------------------
 
 	// set up the possible command line arguments and subcommands
@@ -116,12 +117,14 @@ fn main() -> Result<()> {
 	let config = Config::new(&config_path)?;
 
 	let mut db_path = config_path;
-	if !db_path.pop() {
+	if !db_path.pop()
+	{
 		return Err(anyhow!("Could not correctly parse the config file location. Please specify a valid path to the config file."));
 	}
 
 
-	return match args.subcommand() {
+	return match args.subcommand()
+	{
 		// SYNC SUBCOMMAND ----------------------------------------------
 		Some(("sync", sub_args)) => sync_podcasts(&db_path, config, sub_args),
 
@@ -153,12 +156,15 @@ fn main() -> Result<()> {
 /// Note: Right now we only have one possible command-line argument,
 /// specifying a config path. If the command-line API is
 /// extended in the future, this will have to be refactored.
-fn get_config_path(config: Option<&str>) -> Option<PathBuf> {
-	return match config {
+fn get_config_path(config: Option<&str>) -> Option<PathBuf>
+{
+	return match config
+	{
 		Some(path) => Some(PathBuf::from(path)),
 		None => {
 			let default_config = dirs::config_dir();
-			match default_config {
+			match default_config
+			{
 				Some(mut path) => {
 					path.push("shellcaster");
 					path.push("config.toml");
@@ -172,12 +178,15 @@ fn get_config_path(config: Option<&str>) -> Option<PathBuf> {
 
 
 /// Synchronizes RSS feed data for all podcasts, without setting up a UI.
-fn sync_podcasts(db_path: &Path, config: Config, args: &clap::ArgMatches) -> Result<()> {
+fn sync_podcasts(db_path: &Path, config: Config, args: &clap::ArgMatches) -> Result<()>
+{
 	let db_inst = Database::connect(db_path)?;
 	let podcast_list = db_inst.get_podcasts()?;
 
-	if podcast_list.is_empty() {
-		if !args.is_present("quiet") {
+	if podcast_list.is_empty()
+	{
+		if !args.is_present("quiet")
+		{
 			println!("No podcasts to sync.");
 		}
 		return Ok(());
@@ -186,21 +195,26 @@ fn sync_podcasts(db_path: &Path, config: Config, args: &clap::ArgMatches) -> Res
 	let threadpool = Threadpool::new(config.simultaneous_downloads);
 	let (tx_to_main, rx_to_main) = mpsc::channel();
 
-	for pod in podcast_list.iter() {
+	for pod in podcast_list.iter()
+	{
 		let feed = PodcastFeed::new(Some(pod.id), pod.url.clone(), Some(pod.title.clone()));
 		feeds::check_feed(feed, config.max_retries, &threadpool, tx_to_main.clone());
 	}
 
 	let mut msg_counter: usize = 0;
 	let mut failure = false;
-	while let Some(message) = rx_to_main.iter().next() {
-		match message {
+	while let Some(message) = rx_to_main.iter().next()
+	{
+		match message
+		{
 			Message::Feed(FeedMsg::SyncData((pod_id, pod))) => {
 				let title = pod.title.clone();
 				let db_result = db_inst.update_podcast(pod_id, pod);
-				match db_result {
+				match db_result
+				{
 					Ok(_) => {
-						if !args.is_present("quiet") {
+						if !args.is_present("quiet")
+						{
 							println!("Synced {title}");
 						}
 					}
@@ -213,7 +227,8 @@ fn sync_podcasts(db_path: &Path, config: Config, args: &clap::ArgMatches) -> Res
 
 			Message::Feed(FeedMsg::Error(feed)) => {
 				failure = true;
-				match feed.title {
+				match feed.title
+				{
 					Some(t) => eprintln!("Error retrieving RSS feed for {}.", t),
 					None => eprintln!("Error retrieving RSS feed."),
 				}
@@ -222,14 +237,18 @@ fn sync_podcasts(db_path: &Path, config: Config, args: &clap::ArgMatches) -> Res
 		}
 
 		msg_counter += 1;
-		if msg_counter >= podcast_list.len() {
+		if msg_counter >= podcast_list.len()
+		{
 			break;
 		}
 	}
 
-	if failure {
+	if failure
+	{
 		return Err(anyhow!("Process finished with errors."));
-	} else if !args.is_present("quiet") {
+	}
+	else if !args.is_present("quiet")
+	{
 		println!("Sync successful.");
 	}
 	return Ok(());
@@ -241,7 +260,8 @@ fn sync_podcasts(db_path: &Path, config: Config, args: &clap::ArgMatches) -> Res
 /// existing data in the database.
 fn import(db_path: &Path, config: Config, args: &clap::ArgMatches) -> Result<()> {
 	// read from file or from stdin
-	let xml = match args.value_of("file") {
+	let xml = match args.value_of("file")
+	{
 		Some(filepath) => {
 			let mut f = File::open(filepath)
 				.with_context(|| format!("Could not open OPML file: {filepath}"))?;
@@ -263,8 +283,10 @@ fn import(db_path: &Path, config: Config, args: &clap::ArgMatches) -> Result<()>
 		"Could not properly parse OPML file -- file may be formatted improperly or corrupted."
 	})?;
 
-	if podcast_list.is_empty() {
-		if !args.is_present("quiet") {
+	if podcast_list.is_empty()
+	{
+		if !args.is_present("quiet")
+		{
 			println!("No podcasts to import.");
 		}
 		return Ok(());
@@ -273,19 +295,24 @@ fn import(db_path: &Path, config: Config, args: &clap::ArgMatches) -> Result<()>
 	let db_inst = Database::connect(db_path)?;
 
 	// delete database if we are replacing the data
-	if args.is_present("replace") {
+	if args.is_present("replace")
+	{
 		db_inst
 			.clear_db()
 			.with_context(|| "Error clearing database")?;
-	} else {
+	}
+	else
+	{
 		let old_podcasts = db_inst.get_podcasts()?;
 
 		// if URL is already in database, remove it from import
 		podcast_list = podcast_list
 			.into_iter()
 			.filter(|pod| {
-				for op in &old_podcasts {
-					if pod.url == op.url {
+				for op in &old_podcasts
+				{
+					if pod.url == op.url
+					{
 						return false;
 					}
 				}
@@ -296,8 +323,10 @@ fn import(db_path: &Path, config: Config, args: &clap::ArgMatches) -> Result<()>
 
 	// check again, now that we may have removed feeds after looking at
 	// the database
-	if podcast_list.is_empty() {
-		if !args.is_present("quiet") {
+	if podcast_list.is_empty()
+	{
+		if !args.is_present("quiet")
+		{
 			println!("No podcasts to import.");
 		}
 		return Ok(());
@@ -308,7 +337,8 @@ fn import(db_path: &Path, config: Config, args: &clap::ArgMatches) -> Result<()>
 	let threadpool = Threadpool::new(config.simultaneous_downloads);
 	let (tx_to_main, rx_to_main) = mpsc::channel();
 
-	for pod in podcast_list.iter() {
+	for pod in podcast_list.iter()
+	{
 		feeds::check_feed(
 			pod.clone(),
 			config.max_retries,
@@ -319,14 +349,18 @@ fn import(db_path: &Path, config: Config, args: &clap::ArgMatches) -> Result<()>
 
 	let mut msg_counter: usize = 0;
 	let mut failure = false;
-	while let Some(message) = rx_to_main.iter().next() {
-		match message {
+	while let Some(message) = rx_to_main.iter().next()
+	{
+		match message
+		{
 			Message::Feed(FeedMsg::NewData(pod)) => {
 				let title = pod.title.clone();
 				let db_result = db_inst.insert_podcast(pod);
-				match db_result {
+				match db_result
+				{
 					Ok(_) => {
-						if !args.is_present("quiet") {
+						if !args.is_present("quiet")
+						{
 							println!("Added {title}");
 						}
 					}
@@ -339,9 +373,12 @@ fn import(db_path: &Path, config: Config, args: &clap::ArgMatches) -> Result<()>
 
 			Message::Feed(FeedMsg::Error(feed)) => {
 				failure = true;
-				if let Some(t) = feed.title {
+				if let Some(t) = feed.title
+				{
 					eprintln!("Error retrieving RSS feed: {t}");
-				} else {
+				}
+				else
+				{
 					eprintln!("Error retrieving RSS feed");
 				}
 			}
@@ -349,14 +386,18 @@ fn import(db_path: &Path, config: Config, args: &clap::ArgMatches) -> Result<()>
 		}
 
 		msg_counter += 1;
-		if msg_counter >= podcast_list.len() {
+		if msg_counter >= podcast_list.len()
+		{
 			break;
 		}
 	}
 
-	if failure {
+	if failure
+	{
 		return Err(anyhow!("Process finished with errors."));
-	} else if !args.is_present("quiet") {
+	}
+	else if !args.is_present("quiet")
+	{
 		println!("Import successful.");
 	}
 	return Ok(());
@@ -375,7 +416,8 @@ fn export(db_path: &Path, args: &clap::ArgMatches) -> Result<()> {
 		.map_err(|err| anyhow!(err))
 		.with_context(|| "Could not create OPML format")?;
 
-	match args.value_of("file") {
+	match args.value_of("file")
+	{
 		// export to file
 		Some(file) => {
 			let mut dst = File::create(file)

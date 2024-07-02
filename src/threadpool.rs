@@ -8,20 +8,24 @@ use std::thread;
 /// Manages a threadpool of a given size, sending jobs to workers as
 /// necessary. Implements Drop trait to allow threads to complete
 /// their current jobs before being stopped.
-pub struct Threadpool {
+pub struct Threadpool
+{
 	workers: Vec<Worker>,
 	sender: mpsc::Sender<JobMessage>,
 }
 
-impl Threadpool {
+impl Threadpool
+{
 	/// Creates a new Threadpool of a given size.
-	pub fn new(n_threads: usize) -> Threadpool {
+	pub fn new(n_threads: usize) -> Threadpool
+	{
 		let (sender, receiver) = mpsc::channel();
 		let receiver_lock = Arc::new(Mutex::new(receiver));
 
 		let mut workers = Vec::with_capacity(n_threads);
 
-		for _ in 0..n_threads {
+		for _ in 0..n_threads
+		{
 			workers.push(Worker::new(Arc::clone(&receiver_lock)));
 		}
 
@@ -34,7 +38,8 @@ impl Threadpool {
 	/// Adds a new job to the threadpool, passing closure to first
 	/// available worker.
 	pub fn execute<F>(&self, func: F)
-	where F: FnOnce() + Send + 'static {
+	where F: FnOnce() + Send + 'static
+	{
 		let job = Box::new(func);
 		self.sender
 			.send(JobMessage::NewJob(job))
@@ -42,18 +47,23 @@ impl Threadpool {
 	}
 }
 
-impl Drop for Threadpool {
+impl Drop for Threadpool
+{
 	/// Upon going out of scope, Threadpool sends terminate message to
 	/// all workers but allows them to complete current jobs.
-	fn drop(&mut self) {
-		for _ in &self.workers {
+	fn drop(&mut self)
+	{
+		for _ in &self.workers
+		{
 			self.sender
 				.send(JobMessage::Terminate)
 				.expect("Thread messaging error");
 		}
 
-		for worker in &mut self.workers {
-			if let Some(thread) = worker.thread.take() {
+		for worker in &mut self.workers
+		{
+			if let Some(thread) = worker.thread.take()
+			{
 				// joins to ensure threads finish job before stopping
 				thread.join().expect("Error dropping threads");
 			}
@@ -64,29 +74,35 @@ impl Drop for Threadpool {
 type Job = Box<dyn FnOnce() + Send + 'static>;
 
 /// Messages used by Threadpool to communicate with Workers.
-enum JobMessage {
+enum JobMessage
+{
 	NewJob(Job),
 	Terminate,
 }
 
 /// Used by Threadpool to complete jobs. Each Worker manages a single
 /// thread.
-struct Worker {
+struct Worker
+{
 	thread: Option<thread::JoinHandle<()>>,
 }
 
-impl Worker {
+impl Worker
+{
 	/// Creates a new Worker, which waits for Jobs to be passed by the
 	/// Threadpool.
-	fn new(receiver: Arc<Mutex<mpsc::Receiver<JobMessage>>>) -> Worker {
-		let thread = thread::spawn(move || loop {
+	fn new(receiver: Arc<Mutex<mpsc::Receiver<JobMessage>>>) -> Worker
+	{
+		let thread = thread::spawn(move || loop
+		{
 			let message = receiver
 				.lock()
 				.expect("Threadpool error")
 				.recv()
 				.expect("Thread messaging error");
 
-			match message {
+			match message
+			{
 				JobMessage::NewJob(job) => job(),
 				JobMessage::Terminate => break,
 			}

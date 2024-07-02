@@ -9,7 +9,8 @@ use super::Scroll;
 
 /// Used to hold one line of content used in the details panel.
 #[derive(Debug)]
-pub enum DetailsLine {
+pub enum DetailsLine
+{
 	Blank,
 	Line(String, Option<style::ContentStyle>),
 	KeyValueLine(
@@ -21,7 +22,8 @@ pub enum DetailsLine {
 
 /// Struct holding the raw data used for building the details panel.
 #[derive(Debug)]
-pub struct Details {
+pub struct Details
+{
 	pub pod_title: Option<String>,
 	pub ep_title: Option<String>,
 	pub pubdate: Option<DateTime<Utc>>,
@@ -31,7 +33,8 @@ pub struct Details {
 }
 
 #[derive(Debug)]
-pub struct DetailsPanel {
+pub struct DetailsPanel
+{
 	pub panel: Panel,
 	pub details: Option<Details>,
 	pub content: Vec<DetailsLine>,
@@ -39,7 +42,8 @@ pub struct DetailsPanel {
 	pub total_rows: u16, // the total number of rows the details take up
 }
 
-impl DetailsPanel {
+impl DetailsPanel
+{
 	/// Creates a new details panel.
 	pub fn new(
 		title: String,
@@ -49,7 +53,8 @@ impl DetailsPanel {
 		n_col: u16,
 		start_x: u16,
 		margins: (u16, u16, u16, u16),
-	) -> Self {
+	) -> Self
+	{
 		let panel = Panel::new(title, screen_pos, colors, n_row, n_col, start_x, margins);
 		return Self {
 			panel: panel,
@@ -61,12 +66,14 @@ impl DetailsPanel {
 	}
 
 	/// Redraws borders and refreshes the window to display on terminal.
-	pub fn redraw(&self) {
+	pub fn redraw(&self)
+	{
 		self.panel.redraw();
 	}
 
 	/// Insert new details into the details pane.
-	pub fn change_details(&mut self, details: Details) {
+	pub fn change_details(&mut self, details: Details)
+	{
 		self.top_row = 0;
 		self.details = Some(details);
 		self.stringify_content();
@@ -75,7 +82,8 @@ impl DetailsPanel {
 	}
 
 	/// Updates window size.
-	pub fn resize(&mut self, n_row: u16, n_col: u16, start_x: u16) {
+	pub fn resize(&mut self, n_row: u16, n_col: u16, start_x: u16)
+	{
 		self.panel.resize(n_row, n_col, start_x);
 		self.stringify_content();
 		self.redraw();
@@ -87,21 +95,28 @@ impl DetailsPanel {
 	/// This function examines the new selected value, ensures it does
 	/// not fall out of bounds, and then updates the panel to
 	/// represent the new visible list.
-	pub fn scroll(&mut self, lines: Scroll) {
-		if self.content.is_empty() {
+	pub fn scroll(&mut self, lines: Scroll)
+	{
+		if self.content.is_empty()
+		{
 			return;
 		}
 		let total_rows = self.content.len() as u16;
 		let old_top_row = self.top_row;
 
-		match lines {
+		match lines
+		{
 			Scroll::Up(v) => {
-				if let Some(top) = self.top_row.checked_sub(v) {
+				if let Some(top) = self.top_row.checked_sub(v)
+				{
 					self.top_row = top;
-				} else {
+				}
+				else
+				{
 					self.top_row = 0;
 				}
-				if self.top_row != old_top_row {
+				if self.top_row != old_top_row
+				{
 					self.panel.clear_inner();
 					// self.details_template(self.top_row);
 					self.write_details();
@@ -110,12 +125,14 @@ impl DetailsPanel {
 			Scroll::Down(v) => {
 				let n_row = self.panel.get_rows();
 				// can't scroll if details are shorter than screen
-				if total_rows <= n_row {
+				if total_rows <= n_row
+				{
 					return;
 				}
 				let move_dist = std::cmp::min(v, total_rows - self.top_row - n_row);
 				self.top_row += move_dist;
-				if self.top_row != old_top_row {
+				if self.top_row != old_top_row
+				{
 					self.panel.clear_inner();
 					// self.details_template(self.top_row);
 					self.write_details();
@@ -127,8 +144,10 @@ impl DetailsPanel {
 	/// Format the details content to fit the panel as currently sized
 	/// and save it as Strings. This needs to be done to allow the
 	/// content to be scrollable.
-	fn stringify_content(&mut self) {
-		if let Some(details) = &self.details {
+	fn stringify_content(&mut self)
+	{
+		if let Some(details) = &self.details
+		{
 			let num_cols = self.panel.get_cols() as usize;
 			let bold = style::ContentStyle::new()
 				.with(self.panel.colors.bold.0)
@@ -142,23 +161,27 @@ impl DetailsPanel {
 			self.content.clear();
 
 			// podcast title
-			let text = match &details.pod_title {
+			let text = match &details.pod_title
+			{
 				Some(t) => t,
 				None => "No title",
 			};
 			let wrapper = textwrap::wrap(text, num_cols);
-			for line in wrapper {
+			for line in wrapper
+			{
 				self.content
 					.push(DetailsLine::Line(line.to_string(), Some(bold)));
 			}
 
 			// episode title
-			let text = match &details.ep_title {
+			let text = match &details.ep_title
+			{
 				Some(t) => t,
 				None => "No title",
 			};
 			let wrapper = textwrap::wrap(text, num_cols);
-			for line in wrapper {
+			for line in wrapper
+			{
 				self.content
 					.push(DetailsLine::Line(line.to_string(), Some(bold)));
 			}
@@ -166,7 +189,8 @@ impl DetailsPanel {
 			self.content.push(DetailsLine::Blank); // blank line
 
 			// published date
-			if let Some(date) = details.pubdate {
+			if let Some(date) = details.pubdate
+			{
 				self.content.push(DetailsLine::KeyValueLine(
 					("Published".to_string(), Some(underlined)),
 					(format!("{}", date.format("%B %-d, %Y")), None),
@@ -174,7 +198,8 @@ impl DetailsPanel {
 			}
 
 			// duration
-			if let Some(dur) = &details.duration {
+			if let Some(dur) = &details.duration
+			{
 				self.content.push(DetailsLine::KeyValueLine(
 					("Duration".to_string(), Some(underlined)),
 					(dur.clone(), None),
@@ -182,7 +207,8 @@ impl DetailsPanel {
 			}
 
 			// explicit
-			if let Some(exp) = details.explicit {
+			if let Some(exp) = details.explicit
+			{
 				let exp_string = if exp {
 					"Yes".to_string()
 				} else {
@@ -197,21 +223,25 @@ impl DetailsPanel {
 			self.content.push(DetailsLine::Blank); // blank line
 
 			// description
-			match &details.description {
+			match &details.description
+			{
 				Some(desc) => {
 					let wrapper = textwrap::wrap("Description:", num_cols);
-					for line in wrapper {
+					for line in wrapper
+					{
 						self.content
 							.push(DetailsLine::Line(line.to_string(), Some(bold)));
 					}
 					let wrapper = textwrap::wrap(desc, num_cols);
-					for line in wrapper {
+					for line in wrapper
+					{
 						self.content.push(DetailsLine::Line(line.to_string(), None));
 					}
 				}
 				None => {
 					let wrapper = textwrap::wrap("No description.", num_cols);
-					for line in wrapper {
+					for line in wrapper
+					{
 						self.content.push(DetailsLine::Line(line.to_string(), None));
 					}
 				}
@@ -220,11 +250,15 @@ impl DetailsPanel {
 	}
 
 	/// Write the details content to the screen.
-	pub fn write_details(&mut self) {
-		if !self.content.is_empty() {
+	pub fn write_details(&mut self)
+	{
+		if !self.content.is_empty()
+		{
 			let mut row = 0;
-			for line in self.content.iter().skip(self.top_row as usize) {
-				match line {
+			for line in self.content.iter().skip(self.top_row as usize)
+			{
+				match line
+				{
 					DetailsLine::Blank => row += 1,
 					DetailsLine::Line(text, style) => {
 						row = self.panel.write_wrap_line(row, text, *style);

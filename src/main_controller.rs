@@ -18,7 +18,8 @@ use crate::ui::{Ui, UiMsg};
 /// Enum used for communicating with other threads.
 #[allow(clippy::enum_variant_names)]
 #[derive(Debug)]
-pub enum MainMessage {
+pub enum MainMessage
+{
 	UiUpdateMenus,
 	UiSpawnNotif(String, bool, u64),
 	UiSpawnPersistentNotif(String, bool),
@@ -29,7 +30,8 @@ pub enum MainMessage {
 
 /// Main application controller, holding all of the main application
 /// state and mechanisms for communicatingg with the rest of the app.
-pub struct MainController {
+pub struct MainController
+{
 	config: Config,
 	db: Database,
 	threadpool: Threadpool,
@@ -44,11 +46,13 @@ pub struct MainController {
 	pub rx_to_main: mpsc::Receiver<Message>,
 }
 
-impl MainController {
+impl MainController
+{
 	/// Instantiates the main controller (used during app startup), which
 	/// sets up the connection to the database, download manager, and UI
 	/// thread, and reads the list of podcasts from the database.
-	pub fn new(config: Config, db_path: &Path) -> Result<MainController> {
+	pub fn new(config: Config, db_path: &Path) -> Result<MainController>
+	{
 		// create transmitters and receivers for passing messages between threads
 		let (tx_to_ui, rx_from_main) = mpsc::channel();
 		let (tx_to_main, rx_to_main) = mpsc::channel();
@@ -93,16 +97,20 @@ impl MainController {
 	}
 
 	/// Initiates the main loop where the controller waits for messages coming in from the UI and other threads, and processes them.
-	pub fn loop_msgs(&mut self) {
-		while let Some(message) = self.rx_to_main.iter().next() {
-			match message {
+	pub fn loop_msgs(&mut self)
+	{
+		while let Some(message) = self.rx_to_main.iter().next()
+		{
+			match message
+			{
 				Message::Ui(UiMsg::Quit) => break,
 
 				Message::Ui(UiMsg::AddFeed(url)) => self.add_podcast(url),
 
 				Message::Feed(FeedMsg::NewData(pod)) => self.add_or_sync_data(pod, None),
 
-				Message::Feed(FeedMsg::Error(feed)) => match feed.title {
+				Message::Feed(FeedMsg::Error(feed)) => match feed.title
+				{
 					Some(t) => {
 						self.notif_to_ui(format!("Error retrieving RSS feed for {t}."), true)
 					}
@@ -128,7 +136,8 @@ impl MainController {
 				Message::Ui(UiMsg::Download(pod_id, ep_id)) => self.download(pod_id, Some(ep_id)),
 
 				Message::Ui(UiMsg::DownloadMulti(vec)) => {
-					for (pod_id, ep_id) in vec.into_iter() {
+					for (pod_id, ep_id) in vec.into_iter()
+					{
 						self.download(pod_id, Some(ep_id));
 					}
 				}
@@ -166,7 +175,8 @@ impl MainController {
 				Message::Ui(UiMsg::FilterChange(filter_type)) => {
 					let new_filter;
 					let message;
-					match filter_type {
+					match filter_type
+					{
 						// we need to handle these separately because the
 						// order that makes the most sense to me is
 						// different:
@@ -176,7 +186,8 @@ impl MainController {
 						// are most likely to want to specifically find
 						// unplayed episodes, or downloaded episodes
 						FilterType::Played => {
-							match self.filters.played {
+							match self.filters.played
+							{
 								FilterStatus::All => {
 									new_filter = FilterStatus::NegativeCases;
 									message = "Unplayed only";
@@ -193,7 +204,8 @@ impl MainController {
 							self.filters.played = new_filter;
 						}
 						FilterType::Downloaded => {
-							match self.filters.downloaded {
+							match self.filters.downloaded
+							{
 								FilterStatus::All => {
 									new_filter = FilterStatus::PositiveCases;
 									message = "Downloaded only";
@@ -221,7 +233,8 @@ impl MainController {
 
 	/// Sends the specified notification to the UI, which will display at
 	/// the bottom of the screen.
-	pub fn notif_to_ui(&self, message: String, error: bool) {
+	pub fn notif_to_ui(&self, message: String, error: bool)
+	{
 		self.tx_to_ui
 			.send(MainMessage::UiSpawnNotif(
 				message,
@@ -233,14 +246,16 @@ impl MainController {
 
 	/// Sends a persistent notification to the UI, which will display at
 	/// the bottom of the screen until cleared.
-	pub fn persistent_notif_to_ui(&self, message: String, error: bool) {
+	pub fn persistent_notif_to_ui(&self, message: String, error: bool)
+	{
 		self.tx_to_ui
 			.send(MainMessage::UiSpawnPersistentNotif(message, error))
 			.expect("Thread messaging error");
 	}
 
 	/// Clears persistent notifications in the UI.
-	pub fn clear_persistent_notif(&self) {
+	pub fn clear_persistent_notif(&self)
+	{
 		self.tx_to_ui
 			.send(MainMessage::UiClearPersistentNotif)
 			.expect("Thread messaging error");
@@ -248,29 +263,38 @@ impl MainController {
 
 	/// Updates the persistent notification about syncing podcasts and
 	/// downloading files.
-	pub fn update_tracker_notif(&self) {
+	pub fn update_tracker_notif(&self)
+	{
 		let sync_len = self.sync_counter;
 		let dl_len = self.download_tracker.len();
 		let sync_plural = if sync_len > 1 { "s" } else { "" };
 		let dl_plural = if dl_len > 1 { "s" } else { "" };
 
-		if sync_len > 0 && dl_len > 0 {
+		if sync_len > 0 && dl_len > 0
+		{
 			let notif = format!(
 				"Syncing {sync_len} podcast{sync_plural}, downloading {dl_len} episode{dl_plural}...");
 			self.persistent_notif_to_ui(notif, false);
-		} else if sync_len > 0 {
+		}
+		else if sync_len > 0
+		{
 			let notif = format!("Syncing {sync_len} podcast{sync_plural}...");
 			self.persistent_notif_to_ui(notif, false);
-		} else if dl_len > 0 {
+		}
+		else if dl_len > 0
+		{
 			let notif = format!("Downloading {dl_len} episode{dl_plural}...");
 			self.persistent_notif_to_ui(notif, false);
-		} else {
+		}
+		else
+		{
 			self.clear_persistent_notif();
 		}
 	}
 
 	/// Add a new podcast by fetching the RSS feed data.
-	pub fn add_podcast(&self, url: String) {
+	pub fn add_podcast(&self, url: String)
+	{
 		let feed = PodcastFeed::new(None, url, None);
 		feeds::check_feed(
 			feed,
@@ -281,14 +305,16 @@ impl MainController {
 	}
 
 	/// Synchronize RSS feed data for one or more podcasts.
-	pub fn sync(&mut self, pod_id: Option<i64>) {
+	pub fn sync(&mut self, pod_id: Option<i64>)
+	{
 		// We pull out the data we need here first, so we can
 		// stop borrowing the podcast list as quickly as possible.
 		// Slightly less efficient (two loops instead of
 		// one), but then it won't block other tasks that
 		// need to access the list.
 		let mut pod_data = Vec::new();
-		match pod_id {
+		match pod_id
+		{
 			// just grab one podcast
 			Some(id) => pod_data.push(
 				self.podcasts
@@ -305,7 +331,8 @@ impl MainController {
 				)
 			}
 		}
-		for feed in pod_data.into_iter() {
+		for feed in pod_data.into_iter()
+		{
 			self.sync_counter += 1;
 			feeds::check_feed(
 				feed,
@@ -321,19 +348,24 @@ impl MainController {
 	/// synchronizing data from the RSS feed of an existing podcast.
 	/// `pod_id` will be None if a new podcast is being added (i.e.,
 	/// the database has not given it an id yet).
-	pub fn add_or_sync_data(&mut self, pod: PodcastNoId, pod_id: Option<i64>) {
+	pub fn add_or_sync_data(&mut self, pod: PodcastNoId, pod_id: Option<i64>)
+	{
 		let title = pod.title.clone();
 		let db_result;
 		let failure;
 
-		if let Some(id) = pod_id {
+		if let Some(id) = pod_id
+		{
 			db_result = self.db.update_podcast(id, pod);
 			failure = format!("Error synchronizing {title}.");
-		} else {
+		}
+		else
+		{
 			db_result = self.db.insert_podcast(pod);
 			failure = "Error adding podcast to database.".to_string();
 		}
-		match db_result {
+		match db_result
+		{
 			Ok(result) => {
 				{
 					self.podcasts.replace_all(
@@ -344,12 +376,14 @@ impl MainController {
 				}
 				self.update_filters(self.filters, true);
 
-				if pod_id.is_some() {
+				if pod_id.is_some()
+				{
 					self.sync_tracker.push(result);
 					self.sync_counter -= 1;
 					self.update_tracker_notif();
 
-					if self.sync_counter == 0 {
+					if self.sync_counter == 0
+					{
 						// count up total new episodes and updated
 						// episodes when sync process is finished
 						let mut added = 0;
@@ -368,10 +402,13 @@ impl MainController {
 
 						// deal with new episodes once syncing is
 						// complete, based on user preferences
-						if !new_eps.is_empty() {
-							match self.config.download_new_episodes {
+						if !new_eps.is_empty()
+						{
+							match self.config.download_new_episodes
+							{
 								DownloadNewEpisodes::Always => {
-									for ep in new_eps.into_iter() {
+									for ep in new_eps.into_iter()
+									{
 										self.download(ep.pod_id, Some(ep.id));
 									}
 								}
@@ -389,7 +426,9 @@ impl MainController {
 							}
 						}
 					}
-				} else {
+				}
+				else
+				{
 					self.notif_to_ui(
 						format!("Successfully added {} episodes.", result.added.len()),
 						false,
@@ -402,15 +441,19 @@ impl MainController {
 
 	/// Attempts to execute the play command on the given podcast
 	/// episode.
-	pub fn play_file(&self, pod_id: i64, ep_id: i64) {
+	pub fn play_file(&self, pod_id: i64, ep_id: i64)
+	{
 		self.mark_played(pod_id, ep_id, true);
 		let episode = self.podcasts.clone_episode(pod_id, ep_id).unwrap();
 
-		match episode.path {
+		match episode.path
+		{
 			// if there is a local file, try to play that
-			Some(path) => match path.to_str() {
+			Some(path) => match path.to_str()
+			{
 				Some(p) => {
-					if play_file::execute(&self.config.play_command, p).is_err() {
+					if play_file::execute(&self.config.play_command, p).is_err()
+					{
 						self.notif_to_ui(
 							"Error: Could not play file. Check configuration.".to_string(),
 							true,
@@ -421,7 +464,8 @@ impl MainController {
 			},
 			// otherwise, try to stream the URL
 			None => {
-				if play_file::execute(&self.config.play_command, &episode.url).is_err() {
+				if play_file::execute(&self.config.play_command, &episode.url).is_err()
+				{
 					self.notif_to_ui("Error: Could not stream URL.".to_string(), true);
 				}
 			}
@@ -431,7 +475,8 @@ impl MainController {
 	/// Given a podcast and episode, it marks the given episode as
 	/// played/unplayed, sending this info to the database and updating
 	/// in self.podcasts
-	pub fn mark_played(&self, pod_id: i64, ep_id: i64, played: bool) {
+	pub fn mark_played(&self, pod_id: i64, ep_id: i64, played: bool)
+	{
 		let podcast = self.podcasts.clone_podcast(pod_id).unwrap();
 
 		// TODO: Try to find a way to do this without having
@@ -449,11 +494,13 @@ impl MainController {
 	/// Given a podcast, it marks all episodes for that podcast as
 	/// played/unplayed, sending this info to the database and updating
 	/// in self.podcasts
-	pub fn mark_all_played(&self, pod_id: i64, played: bool) {
+	pub fn mark_all_played(&self, pod_id: i64, played: bool)
+	{
 		let podcast = self.podcasts.clone_podcast(pod_id).unwrap();
 		{
 			let borrowed_ep_list = podcast.episodes.borrow_order();
-			for ep in borrowed_ep_list.iter() {
+			for ep in borrowed_ep_list.iter()
+			{
 				let _ = self.db.set_played_status(*ep, played);
 			}
 		}
@@ -471,7 +518,8 @@ impl MainController {
 	/// a vector of jobs to the threadpool to download all episodes in
 	/// the podcast. If given an episode index as well, it will download
 	/// just that episode.
-	pub fn download(&mut self, pod_id: i64, ep_id: Option<i64>) {
+	pub fn download(&mut self, pod_id: i64, ep_id: Option<i64>)
+	{
 		let pod_title;
 		let mut ep_data = Vec::new();
 		{
@@ -481,7 +529,8 @@ impl MainController {
 
 			// if we are selecting one specific episode, just grab that
 			// one; otherwise, loop through them all
-			match ep_id {
+			match ep_id
+			{
 				Some(ep_id) => {
 					// grab just the relevant data we need
 					let data = podcast
@@ -500,14 +549,16 @@ impl MainController {
 							)
 						})
 						.unwrap();
-					if data.1 {
+					if data.1
+					{
 						ep_data.push(data.0);
 					}
 				}
 				None => {
 					// grab just the relevant data we need
 					ep_data = podcast.episodes.filter_map(|ep| {
-						if ep.path.is_none() {
+						if ep.path.is_none()
+						{
 							Some(EpData {
 								id: ep.id,
 								pod_id: ep.pod_id,
@@ -516,7 +567,9 @@ impl MainController {
 								pubdate: ep.pubdate,
 								file_path: None,
 							})
-						} else {
+						}
+						else
+						{
 							None
 						}
 					});
@@ -528,16 +581,19 @@ impl MainController {
 		// don't needlessly download them again
 		ep_data.retain(|ep| !self.download_tracker.contains(&ep.id));
 
-		if !ep_data.is_empty() {
+		if !ep_data.is_empty()
+		{
 			// add directory for podcast, create if it does not exist
 			let dir_name = sanitize_with_options(&pod_title, Options {
 				truncate: true,
 				windows: true, // for simplicity, we'll just use Windows-friendly paths for everyone
 				replacement: "",
 			});
-			match self.create_podcast_dir(dir_name) {
+			match self.create_podcast_dir(dir_name)
+			{
 				Ok(path) => {
-					for ep in ep_data.iter() {
+					for ep in ep_data.iter()
+					{
 						self.download_tracker.insert(ep.id);
 					}
 					downloads::download_list(
@@ -555,10 +611,12 @@ impl MainController {
 	}
 
 	/// Handles logic for what to do when a download successfully completes.
-	pub fn download_complete(&mut self, ep_data: EpData) {
+	pub fn download_complete(&mut self, ep_data: EpData)
+	{
 		let file_path = ep_data.file_path.unwrap();
 		let res = self.db.insert_file(ep_data.id, &file_path);
-		if res.is_err() {
+		if res.is_err()
+		{
 			self.notif_to_ui(
 				format!(
 					"Could not add episode file to database: {}",
@@ -578,7 +636,8 @@ impl MainController {
 
 		self.download_tracker.remove(&ep_data.id);
 		self.update_tracker_notif();
-		if self.download_tracker.is_empty() {
+		if self.download_tracker.is_empty()
+		{
 			self.notif_to_ui("Downloads complete.".to_string(), false);
 		}
 
@@ -587,10 +646,12 @@ impl MainController {
 
 	/// Given a podcast title, creates a download directory for that
 	/// podcast if it does not already exist.
-	pub fn create_podcast_dir(&self, pod_title: String) -> Result<PathBuf, std::io::Error> {
+	pub fn create_podcast_dir(&self, pod_title: String) -> Result<PathBuf, std::io::Error>
+	{
 		let mut download_path = self.config.download_path.clone();
 		download_path.push(pod_title);
-		return match std::fs::create_dir_all(&download_path) {
+		return match std::fs::create_dir_all(&download_path)
+		{
 			Ok(_) => Ok(download_path),
 			Err(err) => Err(err),
 		};
@@ -598,17 +659,21 @@ impl MainController {
 
 	/// Deletes a downloaded file for an episode from the user's local
 	/// system.
-	pub fn delete_file(&self, pod_id: i64, ep_id: i64) {
+	pub fn delete_file(&self, pod_id: i64, ep_id: i64)
+	{
 		let borrowed_map = self.podcasts.borrow_map();
 		let podcast = borrowed_map.get(&pod_id).unwrap();
 
 		let mut episode = podcast.episodes.clone_episode(ep_id).unwrap();
-		if episode.path.is_some() {
+		if episode.path.is_some()
+		{
 			let title = episode.title.clone();
-			match fs::remove_file(episode.path.unwrap()) {
+			match fs::remove_file(episode.path.unwrap())
+			{
 				Ok(_) => {
 					let res = self.db.remove_file(episode.id);
-					if res.is_err() {
+					if res.is_err()
+					{
 						self.notif_to_ui(
 							format!("Could not remove file from database: {title}"),
 							true,
@@ -628,7 +693,8 @@ impl MainController {
 
 	/// Deletes all downloaded files for a given podcast from the user's
 	/// local system.
-	pub fn delete_files(&self, pod_id: i64) {
+	pub fn delete_files(&self, pod_id: i64)
+	{
 		let mut eps_to_remove = Vec::new();
 		let mut success = true;
 		{
@@ -636,10 +702,13 @@ impl MainController {
 			let podcast = borrowed_map.get(&pod_id).unwrap();
 			let mut borrowed_ep_map = podcast.episodes.borrow_map();
 
-			for (_, ep) in borrowed_ep_map.iter_mut() {
-				if ep.path.is_some() {
+			for (_, ep) in borrowed_ep_map.iter_mut()
+			{
+				if ep.path.is_some()
+				{
 					let mut episode = ep.clone();
-					match fs::remove_file(episode.path.unwrap()) {
+					match fs::remove_file(episode.path.unwrap())
+					{
 						Ok(_) => {
 							eps_to_remove.push(episode.id);
 							episode.path = None;
@@ -652,28 +721,35 @@ impl MainController {
 		}
 
 		let res = self.db.remove_files(&eps_to_remove);
-		if res.is_err() {
+		if res.is_err()
+		{
 			success = false;
 		}
 		self.update_filters(self.filters, true);
 
-		if success {
+		if success
+		{
 			self.notif_to_ui("Files successfully deleted.".to_string(), false);
-		} else {
+		}
+		else
+		{
 			self.notif_to_ui("Error while deleting files".to_string(), true);
 		}
 	}
 
 	/// Removes a podcast from the list, optionally deleting local files
 	/// first
-	pub fn remove_podcast(&mut self, pod_id: i64, delete_files: bool) {
-		if delete_files {
+	pub fn remove_podcast(&mut self, pod_id: i64, delete_files: bool)
+	{
+		if delete_files
+		{
 			self.delete_files(pod_id);
 		}
 
 		let pod_id = self.podcasts.map_single(pod_id, |pod| pod.id).unwrap();
 		let res = self.db.remove_podcast(pod_id);
-		if res.is_err() {
+		if res.is_err()
+		{
 			self.notif_to_ui("Could not remove podcast from database".to_string(), true);
 			return;
 		}
@@ -691,8 +767,10 @@ impl MainController {
 
 	/// Removes an episode from the list, optionally deleting local files
 	/// first
-	pub fn remove_episode(&self, pod_id: i64, ep_id: i64, delete_files: bool) {
-		if delete_files {
+	pub fn remove_episode(&self, pod_id: i64, ep_id: i64, delete_files: bool)
+	{
+		if delete_files
+		{
 			self.delete_file(pod_id, ep_id);
 		}
 
@@ -713,8 +791,10 @@ impl MainController {
 
 	/// Removes all episodes for a podcast from the list, optionally
 	/// deleting local files first
-	pub fn remove_all_episodes(&self, pod_id: i64, delete_files: bool) {
-		if delete_files {
+	pub fn remove_all_episodes(&self, pod_id: i64, delete_files: bool)
+	{
+		if delete_files
+		{
 			self.delete_files(pod_id);
 		}
 
@@ -735,30 +815,38 @@ impl MainController {
 
 	/// Updates the user-selected filters to show only played/unplayed
 	/// or downloaded/not downloaded episodes.
-	pub fn update_filters(&self, filters: Filters, update_menus: bool) {
+	pub fn update_filters(&self, filters: Filters, update_menus: bool)
+	{
 		{
 			let (pod_map, pod_order, mut pod_filtered_order) = self.podcasts.borrow();
 			let mut new_filtered_pods = Vec::new();
-			for pod_id in pod_order.iter() {
+			for pod_id in pod_order.iter()
+			{
 				let pod = pod_map.get(pod_id).unwrap();
 				let new_filter = pod.episodes.filter_map(|ep| {
-					let play_filter = match filters.played {
+					let play_filter = match filters.played
+					{
 						FilterStatus::All => false,
 						FilterStatus::PositiveCases => !ep.is_played(),
 						FilterStatus::NegativeCases => ep.is_played(),
 					};
-					let download_filter = match filters.downloaded {
+					let download_filter = match filters.downloaded
+					{
 						FilterStatus::All => false,
 						FilterStatus::PositiveCases => ep.path.is_none(),
 						FilterStatus::NegativeCases => ep.path.is_some(),
 					};
-					if !(play_filter | download_filter) {
+					if !(play_filter | download_filter)
+					{
 						return Some(ep.id);
-					} else {
+					}
+					else
+					{
 						return None;
 					}
 				});
-				if !new_filter.is_empty() {
+				if !new_filter.is_empty()
+				{
 					new_filtered_pods.push(pod.id);
 				}
 				let mut filtered_order = pod.episodes.borrow_filtered_order();
@@ -766,7 +854,8 @@ impl MainController {
 			}
 			*pod_filtered_order = new_filtered_pods;
 		}
-		if update_menus {
+		if update_menus
+		{
 			self.tx_to_ui
 				.send(MainMessage::UiUpdateMenus)
 				.expect("Thread messaging error");

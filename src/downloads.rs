@@ -13,7 +13,8 @@ use crate::types::Message;
 /// successful or unsuccessful downloading of a file. i32 value
 /// represents the episode ID, and PathBuf the location of the new file.
 #[derive(Debug)]
-pub enum DownloadMsg {
+pub enum DownloadMsg
+{
 	Complete(EpData),
 	ResponseError(EpData),
 	FileCreateError(EpData),
@@ -22,7 +23,8 @@ pub enum DownloadMsg {
 
 /// Enum used to communicate relevant data to the threadpool.
 #[derive(Debug, Clone)]
-pub struct EpData {
+pub struct EpData
+{
 	pub id: i64,
 	pub pod_id: i64,
 	pub title: String,
@@ -43,7 +45,8 @@ pub fn download_list(
 	tx_to_main: Sender<Message>,
 ) {
 	// parse episode details and push to queue
-	for ep in episodes.into_iter() {
+	for ep in episodes.into_iter()
+	{
 		let tx = tx_to_main.clone();
 		let dest2 = dest.to_path_buf();
 		threadpool.execute(move || {
@@ -57,7 +60,8 @@ pub fn download_list(
 
 /// Downloads a file to a local filepath, returning DownloadMsg variant
 /// indicating success or failure.
-fn download_file(mut ep_data: EpData, dest: PathBuf, mut max_retries: usize) -> DownloadMsg {
+fn download_file(mut ep_data: EpData, dest: PathBuf, mut max_retries: usize) -> DownloadMsg
+{
 	let agent_builder = ureq::builder()
 		.timeout_connect(Duration::from_secs(10))
 		.timeout_read(Duration::from_secs(120))
@@ -69,9 +73,11 @@ fn download_file(mut ep_data: EpData, dest: PathBuf, mut max_retries: usize) -> 
 	let agent_builder = agent_builder.tls_connector(tls_connector);
 	let agent = agent_builder.build();
 
-	let request: Result<ureq::Response, ()> = loop {
+	let request: Result<ureq::Response, ()> = loop
+	{
 		let response = agent.get(&ep_data.url).call();
-		match response {
+		match response
+		{
 			Ok(resp) => break Ok(resp),
 			Err(_) => {
 				max_retries -= 1;
@@ -82,14 +88,16 @@ fn download_file(mut ep_data: EpData, dest: PathBuf, mut max_retries: usize) -> 
 		}
 	};
 
-	if request.is_err() {
+	if request.is_err()
+	{
 		return DownloadMsg::ResponseError(ep_data);
 	};
 
 	let response = request.unwrap();
 
 	// figure out the file type
-	let ext = match response.header("content-type") {
+	let ext = match response.header("content-type")
+	{
 		Some("audio/x-m4a") => "m4a",
 		Some("audio/mpeg") => "mp3",
 		Some("video/quicktime") => "mov",
@@ -104,7 +112,8 @@ fn download_file(mut ep_data: EpData, dest: PathBuf, mut max_retries: usize) -> 
 		replacement: "",
 	});
 
-	if let Some(pubdate) = ep_data.pubdate {
+	if let Some(pubdate) = ep_data.pubdate
+	{
 		file_name = format!("{}_{}", pubdate.format("%Y%m%d_%H%M%S"), file_name);
 	}
 
@@ -112,14 +121,16 @@ fn download_file(mut ep_data: EpData, dest: PathBuf, mut max_retries: usize) -> 
 	file_path.push(format!("{file_name}.{ext}"));
 
 	let dst = File::create(&file_path);
-	if dst.is_err() {
+	if dst.is_err()
+	{
 		return DownloadMsg::FileCreateError(ep_data);
 	};
 
 	ep_data.file_path = Some(file_path);
 
 	let mut reader = response.into_reader();
-	return match std::io::copy(&mut reader, &mut dst.unwrap()) {
+	return match std::io::copy(&mut reader, &mut dst.unwrap())
+	{
 		Ok(_) => DownloadMsg::Complete(ep_data),
 		Err(_) => DownloadMsg::FileWriteError(ep_data),
 	};

@@ -10,14 +10,16 @@ use semver::Version;
 
 use crate::types::*;
 
-lazy_static! {
+lazy_static!
+{
 	/// Regex for removing "A", "An", and "The" from the beginning of
 	/// podcast titles
 	static ref RE_ARTICLES: Regex = Regex::new(r"^(a|an|the) ").expect("Regex error.");
 }
 
 
-pub struct SyncResult {
+pub struct SyncResult
+{
 	pub added: Vec<NewEpisode>,
 	pub updated: Vec<i64>,
 }
@@ -25,15 +27,18 @@ pub struct SyncResult {
 /// Struct holding a sqlite database connection, with methods to interact
 /// with this connection.
 #[derive(Debug)]
-pub struct Database {
+pub struct Database
+{
 	path: PathBuf,
 	conn: Option<Connection>,
 }
 
-impl Database {
+impl Database
+{
 	/// Creates a new connection to the database (and creates database if
 	/// it does not already exist). Panics if database cannot be accessed.
-	pub fn connect(path: &Path) -> Result<Database> {
+	pub fn connect(path: &Path) -> Result<Database>
+	{
 		let mut db_path = path.to_path_buf();
 		std::fs::create_dir_all(&db_path)
 			.with_context(|| "Unable to create subdirectory for database.")?;
@@ -63,15 +68,18 @@ impl Database {
 			// compare to current app version
 			let curr_ver = Version::parse(crate::VERSION)?;
 
-			match vstr {
+			match vstr
+			{
 				Ok(vstr) => {
 					let db_version = Version::parse(&vstr)?;
-					if db_version < curr_ver {
+					if db_version < curr_ver
+					{
 						// any version checks for DB migrations should
 						// go here first, before we update the version
 
 						// adding a column to capture episode guids
-						if db_version <= Version::parse("1.2.1")? {
+						if db_version <= Version::parse("1.2.1")?
+						{
 							conn.execute("ALTER TABLE episodes ADD COLUMN guid TEXT;", params![])
 								.expect("Could not run database migrations.");
 						}
@@ -89,7 +97,8 @@ impl Database {
 	/// Creates the necessary database tables, if they do not already
 	/// exist. Panics if database cannot be accessed, or if tables cannot
 	/// be created.
-	pub fn create(&self) -> Result<()> {
+	pub fn create(&self) -> Result<()>
+	{
 		let conn = self.conn.as_ref().expect("Error connecting to database.");
 
 		// create podcasts table
@@ -152,16 +161,20 @@ impl Database {
 	/// If version stored in database is less than the current version
 	/// of the app, this updates the value stored in the database to
 	/// match.
-	fn update_version(&self, current_version: Version, update: bool) -> Result<()> {
+	fn update_version(&self, current_version: Version, update: bool) -> Result<()>
+	{
 		let conn = self.conn.as_ref().expect("Error connecting to database.");
 
-		if update {
+		if update
+		{
 			conn.execute(
 				"UPDATE version SET version = ?
 				WHERE id = ?;",
 				params![current_version.to_string(), 1],
 			)?;
-		} else {
+		}
+		else
+		{
 			conn.execute(
 				"INSERT INTO version (id, version)
 				VALUES (?, ?)",
@@ -173,7 +186,8 @@ impl Database {
 
 	/// Inserts a new podcast and list of podcast episodes into the
 	/// database.
-	pub fn insert_podcast(&self, podcast: PodcastNoId) -> Result<SyncResult> {
+	pub fn insert_podcast(&self, podcast: PodcastNoId) -> Result<SyncResult>
+	{
 		let mut conn = Connection::open(&self.path).expect("Error connecting to database.");
 		let tx = conn.transaction()?;
 		// let conn = self.conn.as_ref().expect("Error connecting to database.");
@@ -199,7 +213,8 @@ impl Database {
 			pod_id = stmt.query_row::<i64, _, _>(params![podcast.url], |row| row.get(0))?;
 		}
 		let mut ep_ids = Vec::new();
-		for ep in podcast.episodes.iter().rev() {
+		for ep in podcast.episodes.iter().rev()
+		{
 			let id = self.insert_episode(&tx, pod_id, ep)?;
 			let new_ep = NewEpisode {
 				id: id,
@@ -224,7 +239,8 @@ impl Database {
 		conn: &Connection,
 		podcast_id: i64,
 		episode: &EpisodeNoId,
-	) -> Result<i64> {
+	) -> Result<i64>
+	{
 		let pubdate = episode.pubdate.map(|dt| dt.timestamp());
 
 		let mut stmt = conn.prepare_cached(
@@ -247,7 +263,8 @@ impl Database {
 	}
 
 	/// Inserts a filepath to a downloaded episode.
-	pub fn insert_file(&self, episode_id: i64, path: &Path) -> Result<()> {
+	pub fn insert_file(&self, episode_id: i64, path: &Path) -> Result<()>
+	{
 		let conn = self.conn.as_ref().expect("Error connecting to database.");
 
 		let mut stmt = conn.prepare_cached(
@@ -260,7 +277,8 @@ impl Database {
 
 	/// Removes a file listing for an episode from the database when the
 	/// user has chosen to delete the file.
-	pub fn remove_file(&self, episode_id: i64) -> Result<()> {
+	pub fn remove_file(&self, episode_id: i64) -> Result<()>
+	{
 		let conn = self.conn.as_ref().expect("Error connecting to database.");
 		let mut stmt = conn.prepare_cached("DELETE FROM files WHERE episode_id = ?;")?;
 		stmt.execute(params![episode_id])?;
@@ -268,7 +286,8 @@ impl Database {
 	}
 
 	/// Removes all file listings for the selected episode ids.
-	pub fn remove_files(&self, episode_ids: &[i64]) -> Result<()> {
+	pub fn remove_files(&self, episode_ids: &[i64]) -> Result<()>
+	{
 		let conn = self.conn.as_ref().expect("Error connecting to database.");
 
 		// convert list of episode ids into a comma-separated String
@@ -281,7 +300,8 @@ impl Database {
 	}
 
 	/// Removes a podcast, all episodes, and files from the database.
-	pub fn remove_podcast(&self, podcast_id: i64) -> Result<()> {
+	pub fn remove_podcast(&self, podcast_id: i64) -> Result<()>
+	{
 		let conn = self.conn.as_ref().expect("Error connecting to database.");
 		// Note: Because of the foreign key constraints on `episodes`
 		// and `files` tables, all associated episodes for this podcast
@@ -295,7 +315,8 @@ impl Database {
 	/// Updates an existing podcast in the database, where metadata is
 	/// changed if necessary, and episodes are updated (modified episodes
 	/// are updated, new episodes are inserted).
-	pub fn update_podcast(&self, pod_id: i64, podcast: PodcastNoId) -> Result<SyncResult> {
+	pub fn update_podcast(&self, pod_id: i64, podcast: PodcastNoId) -> Result<SyncResult>
+	{
 		{
 			let conn = self.conn.as_ref().expect("Error connecting to database.");
 			let mut stmt = conn.prepare_cached(
@@ -331,11 +352,14 @@ impl Database {
 		podcast_id: i64,
 		podcast_title: String,
 		episodes: Vec<EpisodeNoId>,
-	) -> Result<SyncResult> {
+	) -> Result<SyncResult>
+	{
 		let old_episodes = self.get_episodes(podcast_id, true)?;
 		let mut old_ep_map = AHashMap::new();
-		for ep in old_episodes.iter() {
-			if !ep.guid.is_empty() {
+		for ep in old_episodes.iter()
+		{
+			if !ep.guid.is_empty()
+			{
 				old_ep_map.insert(ep.guid.clone(), ep.clone());
 			}
 		}
@@ -345,7 +369,8 @@ impl Database {
 
 		let mut insert_ep = Vec::new();
 		let mut update_ep = Vec::new();
-		for new_ep in episodes.iter().rev() {
+		for new_ep in episodes.iter().rev()
+		{
 			let new_pd = new_ep.pubdate.map(|dt| dt.timestamp());
 
 			let mut existing_id = None;
@@ -353,8 +378,10 @@ impl Database {
 
 			// primary matching mechanism: check guid to see if it
 			// already exists in database
-			if !new_ep.guid.is_empty() {
-				if let Some(old_ep) = old_ep_map.get(&new_ep.guid) {
+			if !new_ep.guid.is_empty()
+			{
+				if let Some(old_ep) = old_ep_map.get(&new_ep.guid)
+				{
 					existing_id = Some(old_ep.id);
 					update = self.check_for_updates(old_ep, new_ep);
 				}
@@ -364,19 +391,24 @@ impl Database {
 			// title, url, and pubdate -- if two of the three match, we
 			// count it as an existing episode; otherwise, we add it as
 			// a new episode
-			if existing_id.is_none() {
-				for old_ep in old_episodes.iter().rev() {
+			if existing_id.is_none()
+			{
+				for old_ep in old_episodes.iter().rev()
+				{
 					let mut matching = 0;
 					matching += (new_ep.title == old_ep.title) as i32;
 					matching += (new_ep.url == old_ep.url) as i32;
 
-					if let Some(pd) = new_pd {
-						if let Some(old_pd) = old_ep.pubdate {
+					if let Some(pd) = new_pd
+					{
+						if let Some(old_pd) = old_ep.pubdate
+						{
 							matching += (pd == old_pd.timestamp()) as i32;
 						}
 					}
 
-					if matching >= 2 {
+					if matching >= 2
+					{
 						existing_id = Some(old_ep.id);
 						update = self.check_for_updates(old_ep, new_ep);
 						break;
@@ -384,9 +416,11 @@ impl Database {
 				}
 			}
 
-			match existing_id {
+			match existing_id
+			{
 				Some(id) => {
-					if update {
+					if update
+					{
 						let mut stmt = tx.prepare_cached(
 							"UPDATE episodes SET title = ?, url = ?,
 								guid = ?, description = ?, pubdate = ?,
@@ -427,11 +461,14 @@ impl Database {
 	/// Checks two matching episodes to see whether there are details
 	/// that need to be updated (e.g., same episode, but the title has
 	/// been changed).
-	fn check_for_updates(&self, old_ep: &Episode, new_ep: &EpisodeNoId) -> bool {
+	fn check_for_updates(&self, old_ep: &Episode, new_ep: &EpisodeNoId) -> bool
+	{
 		let new_pd = new_ep.pubdate.map(|dt| dt.timestamp());
 		let mut pd_match = false;
-		if let Some(pd) = new_pd {
-			if let Some(old_pd) = old_ep.pubdate {
+		if let Some(pd) = new_pd
+		{
+			if let Some(old_pd) = old_ep.pubdate
+			{
 				pd_match = pd == old_pd.timestamp();
 			}
 		}
@@ -448,7 +485,8 @@ impl Database {
 	}
 
 	/// Updates an episode to mark it as played or unplayed.
-	pub fn set_played_status(&self, episode_id: i64, played: bool) -> Result<()> {
+	pub fn set_played_status(&self, episode_id: i64, played: bool) -> Result<()>
+	{
 		let conn = self.conn.as_ref().expect("Error connecting to database.");
 
 		let mut stmt = conn.prepare_cached("UPDATE episodes SET played = ? WHERE id = ?;")?;
@@ -459,7 +497,8 @@ impl Database {
 	/// Updates an episode to "remove" it by hiding it. "Removed"
 	/// episodes need to stay in the database so that they don't get
 	/// re-added when the podcast is synced again.
-	pub fn hide_episode(&self, episode_id: i64, hide: bool) -> Result<()> {
+	pub fn hide_episode(&self, episode_id: i64, hide: bool) -> Result<()>
+	{
 		let conn = self.conn.as_ref().expect("Error connecting to database.");
 
 		let mut stmt = conn.prepare_cached("UPDATE episodes SET hidden = ? WHERE id = ?;")?;
@@ -469,12 +508,14 @@ impl Database {
 
 	/// Generates list of all podcasts in database.
 	/// TODO: This should probably use a JOIN statement instead.
-	pub fn get_podcasts(&self) -> Result<Vec<Podcast>> {
+	pub fn get_podcasts(&self) -> Result<Vec<Podcast>>
+	{
 		let conn = self.conn.as_ref().expect("Error connecting to database.");
 		let mut stmt = conn.prepare_cached("SELECT * FROM podcasts;")?;
 		let podcast_iter = stmt.query_map(params![], |row| {
 			let pod_id = row.get("id")?;
-			let episodes = match self.get_episodes(pod_id, false) {
+			let episodes = match self.get_episodes(pod_id, false)
+			{
 				Ok(ep_list) => Ok(ep_list),
 				Err(_) => Err(rusqlite::Error::QueryReturnedNoRows),
 			}?;
@@ -498,7 +539,8 @@ impl Database {
 			})
 		})?;
 		let mut podcasts = Vec::new();
-		for pc in podcast_iter {
+		for pc in podcast_iter
+		{
 			podcasts.push(pc?);
 		}
 		podcasts.sort_unstable();
@@ -507,16 +549,20 @@ impl Database {
 	}
 
 	/// Generates list of episodes for a given podcast.
-	pub fn get_episodes(&self, pod_id: i64, include_hidden: bool) -> Result<Vec<Episode>> {
+	pub fn get_episodes(&self, pod_id: i64, include_hidden: bool) -> Result<Vec<Episode>>
+	{
 		let conn = self.conn.as_ref().expect("Error connecting to database.");
-		let mut stmt = if include_hidden {
+		let mut stmt = if include_hidden
+		{
 			conn.prepare_cached(
 				"SELECT * FROM episodes
 						LEFT JOIN files ON episodes.id = files.episode_id
 						WHERE episodes.podcast_id = ?
 						ORDER BY pubdate DESC;",
 			)?
-		} else {
+		}
+		else
+		{
 			conn.prepare_cached(
 				"SELECT * FROM episodes
 						LEFT JOIN files ON episodes.id = files.episode_id
@@ -526,7 +572,8 @@ impl Database {
 			)?
 		};
 		let episode_iter = stmt.query_map(params![pod_id], |row| {
-			let path = match row.get::<&str, String>("path") {
+			let path = match row.get::<&str, String>("path")
+			{
 				Ok(val) => Some(PathBuf::from(val)),
 				Err(_) => None,
 			};
@@ -550,7 +597,8 @@ impl Database {
 	}
 
 	/// Deletes all rows in all tables
-	pub fn clear_db(&self) -> Result<()> {
+	pub fn clear_db(&self) -> Result<()>
+	{
 		let conn = self.conn.as_ref().expect("Error connecting to database.");
 		conn.execute("DELETE FROM files;", params![])?;
 		conn.execute("DELETE FROM episodes;", params![])?;
@@ -561,8 +609,10 @@ impl Database {
 
 /// Helper function converting an (optional) Unix timestamp to a
 /// DateTime<Utc> object
-fn convert_date(result: Result<i64, rusqlite::Error>) -> Option<DateTime<Utc>> {
-	return match result {
+fn convert_date(result: Result<i64, rusqlite::Error>) -> Option<DateTime<Utc>>
+{
+	return match result
+	{
 		Ok(timestamp) => {
 			NaiveDateTime::from_timestamp_opt(timestamp, 0).map(|ndt| DateTime::from_utc(ndt, Utc))
 		}

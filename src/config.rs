@@ -35,7 +35,8 @@ pub const BIG_SCROLL_AMOUNT: u16 = 4;
 /// Identifies the user's selection for what to do with new episodes
 /// when syncing.
 #[derive(Debug, Clone)]
-pub enum DownloadNewEpisodes {
+pub enum DownloadNewEpisodes
+{
 	Always,
 	AskSelected,
 	AskUnselected,
@@ -44,7 +45,8 @@ pub enum DownloadNewEpisodes {
 
 /// Holds information about user configuration of program.
 #[derive(Debug, Clone)]
-pub struct Config {
+pub struct Config
+{
 	pub download_path: PathBuf,
 	pub play_command: String,
 	pub download_new_episodes: DownloadNewEpisodes,
@@ -57,7 +59,8 @@ pub struct Config {
 /// A temporary struct used to deserialize data from the TOML configuration
 /// file. Will be converted into Config struct.
 #[derive(Debug, Deserialize)]
-struct ConfigFromToml {
+struct ConfigFromToml
+{
 	download_path: Option<String>,
 	play_command: Option<String>,
 	download_new_episodes: Option<String>,
@@ -70,7 +73,8 @@ struct ConfigFromToml {
 /// A temporary struct used to deserialize keybinding data from the TOML
 /// configuration file.
 #[derive(Debug, Deserialize)]
-pub struct KeybindingsFromToml {
+pub struct KeybindingsFromToml
+{
 	pub left: Option<Vec<String>>,
 	pub right: Option<Vec<String>>,
 	pub up: Option<Vec<String>>,
@@ -103,7 +107,8 @@ pub struct KeybindingsFromToml {
 /// configuration file. See crate::ui::colors module for the AppColors
 /// struct which handles the final color scheme.
 #[derive(Debug, Deserialize)]
-pub struct AppColorsFromToml {
+pub struct AppColorsFromToml
+{
 	pub normal_foreground: Option<String>,
 	pub normal_background: Option<String>,
 	pub bold_foreground: Option<String>,
@@ -117,14 +122,17 @@ pub struct AppColorsFromToml {
 }
 
 
-impl Config {
+impl Config
+{
 	/// Given a file path, this reads a TOML config file and returns a
 	/// Config struct with keybindings, etc. Inserts defaults if config
 	/// file does not exist, or if specific values are not set.
-	pub fn new(path: &Path) -> Result<Config> {
+	pub fn new(path: &Path) -> Result<Config>
+	{
 		let mut config_string = String::new();
 
-		let config_toml = match File::open(path) {
+		let config_toml = match File::open(path)
+		{
 			Ok(mut file) => {
 				file.read_to_string(&mut config_string).with_context(|| {
 					"Could not read config.toml. Please ensure file is readable."
@@ -195,15 +203,18 @@ impl Config {
 /// Takes the deserialized TOML configuration, and creates a Config struct
 /// that specifies user settings where indicated, and defaults for any
 /// settings that were not specified by the user.
-fn config_with_defaults(config_toml: ConfigFromToml) -> Result<Config> {
+fn config_with_defaults(config_toml: ConfigFromToml) -> Result<Config>
+{
 	// specify keybindings
-	let keymap = match config_toml.keybindings {
+	let keymap = match config_toml.keybindings
+	{
 		Some(kb) => Keybindings::from_config(kb),
 		None => Keybindings::default(),
 	};
 
 	// specify app colors
-	let colors = match config_toml.colors {
+	let colors = match config_toml.colors
+	{
 		Some(clrs) => {
 			let mut colors = AppColors::default();
 			colors.add_from_config(clrs);
@@ -217,12 +228,14 @@ fn config_with_defaults(config_toml: ConfigFromToml) -> Result<Config> {
 	let download_path =
 		parse_create_dir(config_toml.download_path.as_deref(), dirs::data_local_dir())?;
 
-	let play_command = match config_toml.play_command.as_deref() {
+	let play_command = match config_toml.play_command.as_deref()
+	{
 		Some(cmd) => cmd.to_string(),
 		None => "vlc %s".to_string(),
 	};
 
-	let download_new_episodes = match config_toml.download_new_episodes.as_deref() {
+	let download_new_episodes = match config_toml.download_new_episodes.as_deref()
+	{
 		Some("always") => DownloadNewEpisodes::Always,
 		Some("ask-selected") => DownloadNewEpisodes::AskSelected,
 		Some("ask-unselected") => DownloadNewEpisodes::AskUnselected,
@@ -230,13 +243,15 @@ fn config_with_defaults(config_toml: ConfigFromToml) -> Result<Config> {
 		Some(_) | None => DownloadNewEpisodes::AskUnselected,
 	};
 
-	let simultaneous_downloads = match config_toml.simultaneous_downloads {
+	let simultaneous_downloads = match config_toml.simultaneous_downloads
+	{
 		Some(num) if num > 0 => num,
 		Some(_) => 3,
 		None => 3,
 	};
 
-	let max_retries = match config_toml.max_retries {
+	let max_retries = match config_toml.max_retries
+	{
 		Some(num) if num > 0 => num,
 		Some(_) => 3,
 		None => 3,
@@ -260,9 +275,12 @@ fn config_with_defaults(config_toml: ConfigFromToml) -> Result<Config> {
 /// variables cannot be found, if OS could not produce the appropriate
 /// default directory, or if the specified directories in the path could
 /// not be created.
-fn parse_create_dir(user_dir: Option<&str>, default: Option<PathBuf>) -> Result<PathBuf> {
-	let final_path = match user_dir {
-		Some(path) => match shellexpand::full(path) {
+fn parse_create_dir(user_dir: Option<&str>, default: Option<PathBuf>) -> Result<PathBuf>
+{
+	let final_path = match user_dir
+	{
+		Some(path) => match shellexpand::full(path)
+		{
 			Ok(realpath) => PathBuf::from(realpath.as_ref()),
 			Err(err) => {
 				return Err(anyhow!(
@@ -273,10 +291,12 @@ fn parse_create_dir(user_dir: Option<&str>, default: Option<PathBuf>) -> Result<
 			}
 		},
 		None => {
-			if let Some(mut path) = default {
+			if let Some(mut path) = default
+			{
 				path.push("shellcaster");
 				path
-			} else {
+			} else
+			{
 				return Err(anyhow!("Could not identify a default directory for your OS. Please specify paths manually in config.toml."));
 			}
 		}

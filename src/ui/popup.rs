@@ -14,27 +14,33 @@ use crate::types::*;
 
 /// Enum indicating the type of the currently active popup window.
 #[derive(Debug)]
-pub enum ActivePopup {
+pub enum ActivePopup
+{
 	WelcomeWin(Panel),
 	HelpWin(Panel),
 	DownloadWin(Menu<NewEpisode>),
 	None,
 }
 
-impl ActivePopup {
-	pub fn is_welcome_win(&self) -> bool {
+impl ActivePopup
+{
+	pub fn is_welcome_win(&self) -> bool
+	{
 		return matches!(self, ActivePopup::WelcomeWin(_));
 	}
 
-	pub fn is_help_win(&self) -> bool {
+	pub fn is_help_win(&self) -> bool
+	{
 		return matches!(self, ActivePopup::HelpWin(_));
 	}
 
-	pub fn is_download_win(&self) -> bool {
+	pub fn is_download_win(&self) -> bool
+	{
 		return matches!(self, ActivePopup::DownloadWin(_));
 	}
 
-	pub fn is_none(&self) -> bool {
+	pub fn is_none(&self) -> bool
+	{
 		return matches!(self, ActivePopup::None);
 	}
 }
@@ -46,7 +52,8 @@ impl ActivePopup {
 /// for multiple popup windows to exist (though only one is "active" at
 /// any given time).
 #[derive(Debug)]
-pub struct PopupWin<'a> {
+pub struct PopupWin<'a>
+{
 	popup: ActivePopup,
 	new_episodes: Vec<NewEpisode>,
 	keymap: &'a Keybindings,
@@ -58,15 +65,18 @@ pub struct PopupWin<'a> {
 	pub download_win: bool,
 }
 
-impl<'a> PopupWin<'a> {
+impl<'a> PopupWin<'a>
+{
 	/// Set up struct for handling popup windows.
 	pub fn new(
 		keymap: &'a Keybindings,
 		colors: Rc<AppColors>,
 		total_rows: u16,
 		total_cols: u16,
-	) -> Self {
-		return Self {
+	) -> Self
+	{
+		return Self
+		{
 			popup: ActivePopup::None,
 			new_episodes: Vec::new(),
 			keymap: keymap,
@@ -81,21 +91,25 @@ impl<'a> PopupWin<'a> {
 
 	/// Indicates whether any sort of popup window is currently on the
 	/// screen.
-	pub fn is_popup_active(&self) -> bool {
+	pub fn is_popup_active(&self) -> bool
+	{
 		return self.welcome_win || self.help_win || self.download_win;
 	}
 
 	/// Indicates whether a popup window *other than the welcome window*
 	/// is currently on the screen.
-	pub fn is_non_welcome_popup_active(&self) -> bool {
+	pub fn is_non_welcome_popup_active(&self) -> bool
+	{
 		return self.help_win || self.download_win;
 	}
 
 	/// Resize the currently active popup window if one exists.
-	pub fn resize(&mut self, total_rows: u16, total_cols: u16) {
+	pub fn resize(&mut self, total_rows: u16, total_cols: u16)
+	{
 		self.total_rows = total_rows;
 		self.total_cols = total_cols;
-		match &self.popup {
+		match &self.popup
+		{
 			ActivePopup::WelcomeWin(_win) => {
 				let welcome_win = self.make_welcome_win();
 				self.popup = ActivePopup::WelcomeWin(welcome_win);
@@ -114,18 +128,21 @@ impl<'a> PopupWin<'a> {
 	}
 
 	/// Create a welcome window and draw it to the screen.
-	pub fn spawn_welcome_win(&mut self) {
+	pub fn spawn_welcome_win(&mut self)
+	{
 		self.welcome_win = true;
 		self.change_win();
 	}
 
 	/// Create a new Panel holding a welcome window.
-	pub fn make_welcome_win(&self) -> Panel {
+	pub fn make_welcome_win(&self) -> Panel
+	{
 		// get list of all keybindings for adding a feed, quitting
 		// program, or opening help menu
 		let actions = vec![UserAction::AddFeed, UserAction::Quit, UserAction::Help];
 		let mut key_strs = Vec::new();
-		for action in actions {
+		for action in actions
+		{
 			key_strs.push(self.list_keys(action, None));
 		}
 
@@ -164,13 +181,15 @@ impl<'a> PopupWin<'a> {
 	}
 
 	/// Create a new help window and draw it to the screen.
-	pub fn spawn_help_win(&mut self) {
+	pub fn spawn_help_win(&mut self)
+	{
 		self.help_win = true;
 		self.change_win();
 	}
 
 	/// Create a new Panel holding a help window.
-	pub fn make_help_win(&self) -> Panel {
+	pub fn make_help_win(&self) -> Panel
+	{
 		let big_scroll_up = format!("Up 1/{BIG_SCROLL_AMOUNT} page:");
 		let big_scroll_dn = format!("Down 1/{BIG_SCROLL_AMOUNT} page:");
 		let actions = vec![
@@ -204,12 +223,15 @@ impl<'a> PopupWin<'a> {
 			(Some(UserAction::Quit), "Quit:"),
 		];
 		let mut key_strs = Vec::new();
-		for (action, action_str) in actions {
-			match action {
+		for (action, action_str) in actions
+		{
+			match action
+			{
 				Some(action) => {
 					let keys = self.keymap.keys_for_action(action);
 					// longest prefix is 21 chars long
-					let key_str = match keys.len() {
+					let key_str = match keys.len()
+					{
 						0 => format!("{:>21} <missing>", action_str),
 						1 => format!("{:>21} \"{}\"", action_str, &keys[0]),
 						_ => format!("{:>21} \"{}\" or \"{}\"", action_str, &keys[0], &keys[1]),
@@ -267,11 +289,14 @@ impl<'a> PopupWin<'a> {
 		// rather than "across", but we print to the screen a line at a
 		// time, so the offset jumps down in the list if we have more
 		// than one column
-		for i in 0..keys_per_row {
+		for i in 0..keys_per_row
+		{
 			let mut line = String::new();
-			for j in 0..n_cols {
+			for j in 0..n_cols
+			{
 				let offset = j * keys_per_row;
-				if let Some(val) = key_strs.get((i + offset) as usize) {
+				if let Some(val) = key_strs.get((i + offset) as usize)
+				{
 					// apply `col_spacing` to the right side of the
 					// first column
 					let width = if n_cols > 1 && offset == 0 {
@@ -291,8 +316,10 @@ impl<'a> PopupWin<'a> {
 	}
 
 	/// Create a new download window and draw it to the screen.
-	pub fn spawn_download_win(&mut self, episodes: Vec<NewEpisode>, selected: bool) {
-		for mut ep in episodes {
+	pub fn spawn_download_win(&mut self, episodes: Vec<NewEpisode>, selected: bool)
+	{
+		for mut ep in episodes
+		{
 			ep.selected = selected;
 			self.new_episodes.push(ep);
 		}
@@ -301,7 +328,8 @@ impl<'a> PopupWin<'a> {
 	}
 
 	/// Create a new Panel holding a download window.
-	pub fn make_download_win(&self) -> Menu<NewEpisode> {
+	pub fn make_download_win(&self) -> Menu<NewEpisode>
+	{
 		// the warning on the unused mut is a function of Rust getting
 		// confused between panel.rs and mock_panel.rs
 		#[allow(unused_mut)]
@@ -331,24 +359,28 @@ impl<'a> PopupWin<'a> {
 	}
 
 	/// Appends a new episode to the list of new episodes.
-	pub fn _add_episodes(&mut self, mut episodes: Vec<NewEpisode>) {
+	pub fn _add_episodes(&mut self, mut episodes: Vec<NewEpisode>)
+	{
 		self.new_episodes.append(&mut episodes);
 	}
 
 	/// Gets rid of the welcome window.
-	pub fn turn_off_welcome_win(&mut self) {
+	pub fn turn_off_welcome_win(&mut self)
+	{
 		self.welcome_win = false;
 		self.change_win();
 	}
 
 	/// Gets rid of the help window.
-	pub fn turn_off_help_win(&mut self) {
+	pub fn turn_off_help_win(&mut self)
+	{
 		self.help_win = false;
 		self.change_win();
 	}
 
 	/// Gets rid of the download window.
-	pub fn turn_off_download_win(&mut self) {
+	pub fn turn_off_download_win(&mut self)
+	{
 		self.download_win = false;
 		self.change_win();
 	}
@@ -359,21 +391,28 @@ impl<'a> PopupWin<'a> {
 	/// one, while keeping that second one in reserve. This function
 	/// will check for other popup windows to appear and change the
 	/// active window accordingly.
-	fn change_win(&mut self) {
+	fn change_win(&mut self)
+	{
 		// The help window takes precedence over all other popup
 		// windows; the welcome window is lowest priority and only
 		// appears if all other windows are inactive
-		if self.help_win && !self.popup.is_help_win() {
+		if self.help_win && !self.popup.is_help_win()
+		{
 			let win = self.make_help_win();
 			self.popup = ActivePopup::HelpWin(win);
-		} else if self.download_win && !self.popup.is_download_win() {
+		}
+		else if self.download_win && !self.popup.is_download_win()
+		{
 			let mut win = self.make_download_win();
 			win.activate();
 			self.popup = ActivePopup::DownloadWin(win);
-		} else if self.welcome_win && !self.popup.is_welcome_win() {
+		}
+		else if self.welcome_win && !self.popup.is_welcome_win()
+		{
 			let win = self.make_welcome_win();
 			self.popup = ActivePopup::WelcomeWin(win);
-		} else if !self.help_win && !self.download_win && !self.welcome_win && !self.popup.is_none()
+		}
+		else if !self.help_win && !self.download_win && !self.welcome_win && !self.popup.is_none()
 		{
 			self.popup = ActivePopup::None;
 		}
@@ -381,11 +420,14 @@ impl<'a> PopupWin<'a> {
 
 	/// When a popup window is active, this handles the user's keyboard
 	/// input that is relevant for that window.
-	pub fn handle_input(&mut self, input: KeyEvent) -> UiMsg {
+	pub fn handle_input(&mut self, input: KeyEvent) -> UiMsg
+	{
 		let mut msg = UiMsg::Noop;
-		match self.popup {
+		match self.popup
+		{
 			ActivePopup::HelpWin(ref mut _win) => {
-				match input.code {
+				match input.code
+				{
 					KeyCode::Esc
 					| KeyCode::Char('\u{1b}') // Esc
 					| KeyCode::Char('q')
@@ -395,7 +437,8 @@ impl<'a> PopupWin<'a> {
 					_ => (),
 				}
 			}
-			ActivePopup::DownloadWin(ref mut menu) => match self.keymap.get_from_input(input) {
+			ActivePopup::DownloadWin(ref mut menu) => match self.keymap.get_from_input(input)
+			{
 				Some(UserAction::Down) => menu.scroll(Scroll::Down(1)),
 				Some(UserAction::Up) => menu.scroll(Scroll::Up(1)),
 
@@ -411,13 +454,16 @@ impl<'a> PopupWin<'a> {
 					let mut eps_to_download = Vec::new();
 					{
 						let map = menu.items.borrow_map();
-						for (_, ep) in map.iter() {
-							if ep.selected {
+						for (_, ep) in map.iter()
+						{
+							if ep.selected
+							{
 								eps_to_download.push((ep.pod_id, ep.id));
 							}
 						}
 					}
-					if !eps_to_download.is_empty() {
+					if !eps_to_download.is_empty()
+					{
 						msg = UiMsg::DownloadMulti(eps_to_download);
 					}
 					self.turn_off_download_win();
@@ -435,22 +481,28 @@ impl<'a> PopupWin<'a> {
 	/// user action, and converts it to a string, e.g., '"a", "b", or
 	/// "c"'. If `max_num` is set, will only list up to that number of
 	/// items.
-	fn list_keys(&self, action: UserAction, max_num: Option<usize>) -> String {
+	fn list_keys(&self, action: UserAction, max_num: Option<usize>) -> String
+	{
 		let keys = self.keymap.keys_for_action(action);
 		let mut max_keys = keys.len();
-		if let Some(max_num) = max_num {
+		if let Some(max_num) = max_num
+		{
 			max_keys = min(keys.len(), max_num);
 		}
-		return match max_keys {
+		return match max_keys
+		{
 			0 => "<missing>".to_string(),
 			1 => format!("\"{}\"", &keys[0]),
 			2 => format!("\"{}\" or \"{}\"", &keys[0], &keys[1]),
 			_ => {
 				let mut s = "".to_string();
-				for (i, key) in keys.iter().enumerate().take(max_keys) {
-					if i == max_keys - 1 {
+				for (i, key) in keys.iter().enumerate().take(max_keys)
+				{
+					if i == max_keys - 1
+					{
 						s = format!("{s}, \"{key}\"");
-					} else {
+					} else
+					{
 						s = format!("{s}, or \"{key}\"");
 					}
 				}
