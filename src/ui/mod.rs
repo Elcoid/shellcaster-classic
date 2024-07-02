@@ -34,7 +34,7 @@ use crate::config::Config;
 use crate::keymap::{Keybindings, UserAction};
 use crate::types::*;
 
-/// Amount of time between ticks in the event loop
+/// Amount of time in milliseconds between ticks in the event loop
 const TICK_RATE: u64 = 20;
 
 lazy_static!

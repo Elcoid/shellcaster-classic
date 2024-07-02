@@ -30,6 +30,7 @@ pub enum MainMessage
 
 /// Main application controller, holding all of the main application
 /// state and mechanisms for communicatingg with the rest of the app.
+/// Used in the main function in main.rs.
 pub struct MainController
 {
 	config: Config,
@@ -110,7 +111,9 @@ impl MainController
 
 				Message::Ui(UiMsg::AddFeed(url)) => self.add_podcast(url),
 
-				Message::Feed(FeedMsg::NewData(pod)) => self.add_or_sync_data(pod, None),
+				Message::Feed(FeedMsg::NewData(pod)) => {
+					self.add_or_sync_data(pod, None)
+				},
 
 				Message::Feed(FeedMsg::Error(feed)) => match feed.title
 				{
@@ -128,49 +131,66 @@ impl MainController
 
 				Message::Ui(UiMsg::Sync(pod_id)) => self.sync(Some(pod_id)),
 
-				Message::Feed(FeedMsg::SyncData((id, pod))) => self.add_or_sync_data(pod, Some(id)),
+				Message::Feed(FeedMsg::SyncData((id, pod))) => {
+					self.add_or_sync_data(pod, Some(id))
+				},
 
 				Message::Ui(UiMsg::SyncAll) => self.sync(None),
 
-				Message::Ui(UiMsg::Play(pod_id, ep_id)) => self.play_file(pod_id, ep_id),
+				Message::Ui(UiMsg::Play(pod_id, ep_id)) => {
+					self.play_file(pod_id, ep_id)
+				},
 
 				Message::Ui(UiMsg::MarkPlayed(pod_id, ep_id, played)) => {
 					self.mark_played(pod_id, ep_id, played)
-				}
+				},
 
 				Message::Ui(UiMsg::MarkAllPlayed(pod_id, played)) => {
 					self.mark_all_played(pod_id, played)
-				}
+				},
 
-				Message::Ui(UiMsg::Download(pod_id, ep_id)) => self.download(
-					pod_id,
-					Some(ep_id)
-				),
+				Message::Ui(UiMsg::Download(pod_id, ep_id)) => {
+					self.download(pod_id, Some(ep_id))
+				},
 
 				Message::Ui(UiMsg::DownloadMulti(vec)) => {
 					for (pod_id, ep_id) in vec.into_iter()
 					{
 						self.download(pod_id, Some(ep_id));
 					}
-				}
+				},
 
-				Message::Ui(UiMsg::DownloadAll(pod_id)) => self.download(pod_id, None),
+				Message::Ui(UiMsg::DownloadAll(pod_id)) => {
+					self.download(pod_id, None)
+				},
 
 				// downloading can produce any one of these responses
-				Message::Dl(DownloadMsg::Complete(ep_data)) => self.download_complete(ep_data),
+				Message::Dl(DownloadMsg::Complete(ep_data)) => {
+					self.download_complete(ep_data)
+				},
 				Message::Dl(DownloadMsg::ResponseError(_)) => {
-					self.notif_to_ui("Error sending download request.".to_string(), true)
-				}
+					self.notif_to_ui(
+						"Error sending download request.".to_string(),
+						true
+					)
+				},
 				Message::Dl(DownloadMsg::FileCreateError(_)) => {
 					self.notif_to_ui("Error creating file.".to_string(), true)
-				}
+				},
 				Message::Dl(DownloadMsg::FileWriteError(_)) => {
-					self.notif_to_ui("Error downloading episode.".to_string(), true)
-				}
+					self.notif_to_ui(
+						"Error downloading episode.".to_string(),
+						true
+					)
+				},
 
-				Message::Ui(UiMsg::Delete(pod_id, ep_id)) => self.delete_file(pod_id, ep_id),
+				Message::Ui(UiMsg::Delete(pod_id, ep_id)) => {
+					self.delete_file(pod_id, ep_id)
+				},
 
-				Message::Ui(UiMsg::DeleteAll(pod_id)) => self.delete_files(pod_id),
+				Message::Ui(UiMsg::DeleteAll(pod_id)) => {
+					self.delete_files(pod_id)
+				},
 
 				Message::Ui(UiMsg::RemovePodcast(pod_id, delete_files)) => {
 					self.remove_podcast(pod_id, delete_files)
