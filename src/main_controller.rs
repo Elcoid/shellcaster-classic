@@ -30,6 +30,7 @@ pub enum MainMessage
 
 /// Main application controller, holding all of the main application
 /// state and mechanisms for communicatingg with the rest of the app.
+/// Used in the main function in main.rs.
 pub struct MainController
 {
 	config: Config,

@@ -63,7 +63,10 @@ fn main() -> Result<()>
 	let args = Command::new(clap::crate_name!())
 		.version(clap::crate_version!())
 		// .author(clap::crate_authors!(", "))
-		.author("Jeff Hughes <jeff.hughes@gmail.com>")
+		.author(
+			"2020-2023 Jeff Hughes <jeff.hughes at gmail dot com>\n\
+			 2024      alpou       <alpou at tutanota dot com>"
+		)
 		.about(clap::crate_description!())
 		.arg(Arg::new("config")
 			.short('c')

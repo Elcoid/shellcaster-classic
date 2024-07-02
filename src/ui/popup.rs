@@ -178,12 +178,12 @@ impl<'a> PopupWin<'a>
 
 		row = welcome_win.write_wrap_line(
 			row + 2,
-			"More details of how to customize shellcaster can be found on the Github repo readme:",
+			"More details of how to customize shellcaster can be found in the repo's readme:",
 			None,
 		);
 		let _ = welcome_win.write_wrap_line(
 			row + 1,
-			"https://github.com/jeff-hughes/shellcaster",
+			"https://gitlab.com/alpou/shellcaster-classic",
 			None,
 		);
 
