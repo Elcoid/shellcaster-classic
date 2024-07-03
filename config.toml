@@ -10,11 +10,17 @@
 #download_path = "~/.local/share/shellcaster/"
 
 
-# Command to use to play episodes. Use "%s" to indicate where file/URL
-# will be entered to the command.
-# Default: vlc %s
+# Command used to play episodes.
+# * If the value contains %s, it is used to indicate where the file or URL is
+#   inserted in the command, without any quotation marks around. This is to
+#   ensure a better flexibility if a more complex command is used.
+#   Example: `cat '%s' | mpv -` becomes `cat '/home/you/the file.mp3' | mpv -`
+# * If the value does not contain %s, the file path or URL is appended to the
+#   command, enclosed in double quotes.
+#   Example: `vlc` becomes `vlc "/home/you/the file.mp3"`
+# Default: vlc
 
-#play_command = "vlc %s"
+#play_command = "vlc"
 
 
 # Configures what happens when new episodes are found as podcasts are

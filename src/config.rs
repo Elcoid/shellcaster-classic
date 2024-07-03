@@ -236,7 +236,7 @@ fn config_with_defaults(config_toml: ConfigFromToml) -> Result<Config>
 	let play_command = match config_toml.play_command.as_deref()
 	{
 		Some(cmd) => cmd.to_string(),
-		None => "vlc %s".to_string(),
+		None => "vlc".to_string(),
 	};
 
 	let download_new_episodes = match config_toml.download_new_episodes.as_deref()

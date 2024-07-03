@@ -8,7 +8,7 @@ pub fn execute(command: &str, path: &str) -> Result<()>
 	if cmd_string.contains("%s")
 	{
 		// if command contains "%s", replace the path with that value
-		cmd_string = cmd_string.replace("%s", &format!("\"{}\"", path));
+		cmd_string = cmd_string.replace("%s", &format!("{}", path));
 	}
 	else
 	{
