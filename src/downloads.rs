@@ -99,12 +99,21 @@ fn download_file(
 	// figure out the file type
 	let ext = match response.header("content-type")
 	{
-		Some("audio/x-m4a") => "m4a",
-		Some("audio/mpeg") => "mp3",
+		Some("audio/3gpp")   => "3gp",
+		Some("audio/aac")    => "aac",
+		Some("audio/x-m4a")  => "m4a",
+		Some("audio/midi")   => "mid",
+		Some("audio/x-midi") => "mid",
+		Some("audio/mpeg")   => "mp3",
+		Some("audio/ogg")    => "oga",
+		Some("audio/opus")   => "opus",
+		Some("audio/wav")    => "wav",
+		Some("audio/webm")   => "weba",
 		Some("video/quicktime") => "mov",
-		Some("video/mp4") => "mp4",
-		Some("video/x-m4v") => "m4v",
+		Some("video/mp4")       => "mp4",
+		Some("video/x-m4v")     => "m4v",
 		_ => "mp3", // assume .mp3 unless we figure out otherwise
+		// TODO why not just take the extension from ep_data.url?
 	};
 
 	let mut file_name = sanitize_with_options(&ep_data.title, Options {
