@@ -132,12 +132,11 @@ fn download_file(
 	file_path.push(format!("{file_name}.{ext}"));
 
 	let dst = File::create(&file_path);
+	ep_data.file_path = Some(file_path);
 	if dst.is_err()
 	{
 		return DownloadMsg::FileCreateError(ep_data);
 	};
-
-	ep_data.file_path = Some(file_path);
 
 	let mut reader = response.into_reader();
 	return match std::io::copy(&mut reader, &mut dst.unwrap())

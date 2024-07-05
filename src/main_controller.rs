@@ -174,8 +174,18 @@ impl MainController
 						true
 					)
 				},
-				Message::Dl(DownloadMsg::FileCreateError(_)) => {
-					self.notif_to_ui("Error creating file.".to_string(), true)
+				Message::Dl(DownloadMsg::FileCreateError(ep_data)) => {
+					match ep_data.file_path
+					{
+						Some(path) => self.notif_to_ui(
+							format!("Error creating file \"{}\"", path.display()),
+							true
+						),
+						None => self.notif_to_ui(
+							"Error creating file.".to_string(),
+							true
+						)
+					}
 				},
 				Message::Dl(DownloadMsg::FileWriteError(_)) => {
 					self.notif_to_ui(
