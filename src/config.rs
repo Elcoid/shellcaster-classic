@@ -1,4 +1,5 @@
 use anyhow::{anyhow, Context, Result};
+use chrono::format::{Item, strftime::StrftimeItems};
 use serde::Deserialize;
 use std::fs::File;
 use std::io::Read;
@@ -202,6 +203,29 @@ impl Config
 				}
 			}
 		};
+
+		// Return error if one of filename_prefix or filename_suffix
+		// contains invalid format specifiers
+		if let Some(prefix) = &config_toml.filename_prefix
+		{
+			if StrftimeItems::new(&prefix).any(|i| matches!(i, Item::Error))
+			{
+				return Err(anyhow!(
+					"Invalid value \"{}\" for filename_prefix in config.toml",
+					prefix
+				));
+			}
+		}
+		if let Some(suffix) = &config_toml.filename_suffix
+		{
+			if StrftimeItems::new(&suffix).any(|i| matches!(i, Item::Error))
+			{
+				return Err(anyhow!(
+					"Invalid value \"{}\" for filename_suffix in config.toml",
+					suffix
+				));
+			}
+		}
 
 		return config_with_defaults(config_toml);
 	}

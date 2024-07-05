@@ -57,8 +57,12 @@
 # date of the episode.
 # For example, "%Y-%m-%d" is the date in the format "YYYY-MM-DD" and
 # "%H:%M:%S" is the time of the day in the format "HH:MM:SS".
+#
 # The complete list of supported specifiers is available here:
 # https://docs.rs/chrono/latest/chrono/format/strftime/index.html
+# Note however that depending on your system and locale, %D and %x might
+# not be supported because they can add slashes in the filename.
+#
 # The original Shellcaster had a behaviour that was equivalent to
 # setting filename_prefix = "", filename_suffix = "_%Y%m%d_%H%M%S".
 # Shellcaster-Classic defaults to
