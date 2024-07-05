@@ -1,5 +1,15 @@
 # Changelog
 
+## v2.1.0 (2024-07-05)
+- Add options `filename_prefix` and `filename_suffix` to control how and where
+  the publication date and time of the episodes get added in their file names
+  when downloaded. The default values are `filename_prefix = "%Y%m%d_"` and
+  `filename_suffix = ""`, which prepend the date. The previous behaviour was to
+  append the date and time, which can be obtained with `filename_prefix = ""`
+  and `filename_suffix = "_%Y%m%d_%H%M%S"`. See the provided default config file
+  `config.toml` for more information.
+- HTTP redirects are now followed (up to 10 times) when downloading a file.
+
 ## v2.0.1 (2022-03-03)
 - Bug fix release to handle improper timeouts on HTTP requests
 

@@ -1,7 +1,7 @@
 [package]
 name = "shellcaster-classic"
-version = "2.0.1"
-authors = ["Jeff Hughes <jeff.hughes at gmail dot com>", "alpou <alpou at tutanota dot com>"]
+version = "2.1.0"
+authors = ["alpou <alpou at tutanota dot com>", "Jeff Hughes <jeff.hughes at gmail dot com>"]
 edition = "2021"
 license = "GPL-3.0-or-later"
 description = "A terminal-based podcast manager to subscribe to and play podcasts."
