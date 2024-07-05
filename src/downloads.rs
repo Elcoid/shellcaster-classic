@@ -41,6 +41,8 @@ pub fn download_list(
 	episodes: Vec<EpData>,
 	dest: &Path,
 	max_retries: usize,
+	filename_prefix: &str,
+	filename_suffix: &str,
 	threadpool: &Threadpool,
 	tx_to_main: Sender<Message>,
 ) {
@@ -49,8 +51,10 @@ pub fn download_list(
 	{
 		let tx = tx_to_main.clone();
 		let dest2 = dest.to_path_buf();
+		let prefix = filename_prefix.to_owned();
+		let suffix = filename_suffix.to_owned();
 		threadpool.execute(move || {
-			let result = download_file(ep, dest2, max_retries);
+			let result = download_file(ep, dest2, max_retries, prefix, suffix);
 			tx.send(Message::Dl(result))
 				.expect("Thread messaging error");
 		});
@@ -61,7 +65,11 @@ pub fn download_list(
 /// Downloads a file to a local filepath, returning DownloadMsg variant
 /// indicating success or failure.
 fn download_file(
-	mut ep_data: EpData, dest: PathBuf, mut max_retries: usize
+	mut ep_data: EpData,
+	dest: PathBuf,
+	mut max_retries: usize,
+	filename_prefix: String,
+	filename_suffix: String,
 ) -> DownloadMsg
 {
 	let agent_builder = ureq::builder()
@@ -125,7 +133,12 @@ fn download_file(
 
 	if let Some(pubdate) = ep_data.pubdate
 	{
-		file_name = format!("{}_{}", pubdate.format("%Y%m%d_%H%M%S"), file_name);
+		file_name = format!(
+			"{}{}{}",
+			pubdate.format(&filename_prefix),
+			file_name,
+			pubdate.format(&filename_suffix)
+		);
 	}
 
 	let mut file_path = dest;

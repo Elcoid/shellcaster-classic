@@ -52,6 +52,23 @@
 #max_retries = 3
 
 
+# Prefix and suffix added to the name of each downloaded files.
+# Specifiers beginning with a % can be used to format the publication
+# date of the episode.
+# For example, "%Y-%m-%d" is the date in the format "YYYY-MM-DD" and
+# "%H:%M:%S" is the time of the day in the format "HH:MM:SS".
+# The complete list of supported specifiers is available here:
+# https://docs.rs/chrono/latest/chrono/format/strftime/index.html
+# The original Shellcaster had a behaviour that was equivalent to
+# setting filename_prefix = "", filename_suffix = "_%Y%m%d_%H%M%S".
+# Shellcaster-Classic defaults to
+# filename_prefix = "%Y%m%d_", filename_suffix = ""
+
+#filename_prefix = "%Y%m%d_"
+#filename_suffix = ""
+
+
+
 [keybindings]
 
 # Keybindings must be an array of one or more strings.

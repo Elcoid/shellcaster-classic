@@ -655,6 +655,8 @@ impl MainController
 						ep_data,
 						&path,
 						self.config.max_retries,
+						&self.config.filename_prefix,
+						&self.config.filename_suffix,
 						&self.threadpool,
 						self.tx_to_main.clone(),
 					);
