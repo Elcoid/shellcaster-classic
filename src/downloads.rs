@@ -133,6 +133,12 @@ fn download_file(
 
 	if let Some(pubdate) = ep_data.pubdate
 	{
+		// Note: chrono::DateTime::format panics when its input string contains
+		// invalid identifiers. However, there is a check in
+		// config::Config::new that prevents the program from running when
+		// filename_prefix or filename_suffix is invalid
+		// TODO chrono::DateTime::format is deprecated since 0.4.32. It is
+		// recommended to use DelayedFormat::fmt instead
 		file_name = format!(
 			"{}{}{}",
 			pubdate.format(&filename_prefix),
