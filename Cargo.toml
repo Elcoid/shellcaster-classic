@@ -1,19 +1,23 @@
 [package]
-name = "shellcaster"
+name = "shellcaster-classic"
 version = "2.0.1"
-authors = ["Jeff Hughes <jeff.hughes@gmail.com>"]
+authors = ["Jeff Hughes <jeff.hughes at gmail dot com>", "alpou <alpou at tutanota dot com>"]
 edition = "2021"
 license = "GPL-3.0-or-later"
 description = "A terminal-based podcast manager to subscribe to and play podcasts."
 keywords = ["podcast", "terminal", "TUI", "curses"]
 categories = ["multimedia::audio", "command-line-interface"]
 
-homepage = "https://github.com/jeff-hughes/shellcaster"
-repository = "https://github.com/jeff-hughes/shellcaster"
-documentation = "https://github.com/jeff-hughes/shellcaster"
+homepage = "https://gitlab.com/alpou/shellcaster-classic"
+repository = "https://gitlab.com/alpou/shellcaster-classic"
+documentation = "https://gitlab.com/alpou/shellcaster-classic"
 readme = "README.md"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+# Output a binary called "shellcaster" even if the
+# package is called "shellcaster-classic"
+[[bin]]
+name = "shellcaster"
+path = "src/main.rs"
 
 [dependencies]
 crossterm = "0.23.0"
