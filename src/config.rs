@@ -54,6 +54,8 @@ pub struct Config
 	pub max_retries: usize,
 	pub keybindings: Keybindings,
 	pub colors: AppColors,
+	pub filename_prefix: String,
+	pub filename_suffix: String,
 }
 
 /// A temporary struct used to deserialize data from the TOML configuration
@@ -68,6 +70,8 @@ struct ConfigFromToml
 	max_retries: Option<usize>,
 	keybindings: Option<KeybindingsFromToml>,
 	colors: Option<AppColorsFromToml>,
+	filename_prefix: Option<String>,
+	filename_suffix: Option<String>,
 }
 
 /// A temporary struct used to deserialize keybinding data from the TOML
@@ -131,7 +135,7 @@ impl Config
 	{
 		let mut config_string = String::new();
 
-		let config_toml = match File::open(path)
+		let config_toml: ConfigFromToml = match File::open(path)
 		{
 			Ok(mut file) => {
 				file.read_to_string(&mut config_string).with_context(|| {
@@ -193,6 +197,8 @@ impl Config
 					max_retries: None,
 					keybindings: Some(keybindings),
 					colors: Some(colors),
+					filename_prefix: None,
+					filename_suffix: None,
 				}
 			}
 		};
@@ -261,6 +267,18 @@ fn config_with_defaults(config_toml: ConfigFromToml) -> Result<Config>
 		None => 3,
 	};
 
+	let filename_prefix = match config_toml.filename_prefix.as_deref()
+	{
+		Some(pref) => pref.to_string(),
+		None => "%Y%m%d_".to_string(),
+	};
+
+	let filename_suffix = match config_toml.filename_suffix.as_deref()
+	{
+		Some(suff) => suff.to_string(),
+		None => "".to_string(),
+	};
+
 	return Ok(Config {
 		download_path: download_path,
 		play_command: play_command,
@@ -269,6 +287,8 @@ fn config_with_defaults(config_toml: ConfigFromToml) -> Result<Config>
 		max_retries: max_retries,
 		keybindings: keymap,
 		colors: colors,
+		filename_prefix: filename_prefix,
+		filename_suffix: filename_suffix,
 	});
 }
 
