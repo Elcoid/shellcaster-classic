@@ -271,9 +271,8 @@ can't set "d" to both download and delete episodes).
 
 You can set the colors in the app with either built-in terminal colors or
 (provided your terminal supports it) customizable colors as well. See the
-"colors" section in the
-[config.toml](https://github.com/jeff-hughes/shellcaster/blob/master/config.toml)
-for details about how to specify these colors!
+"colors" section in the [config.toml](config.toml) for details about how to
+specify these colors!
 
 ## Syncing without the UI
 
