@@ -298,6 +298,15 @@ Thanks to these fine folks who have made contributions:
 [dwvisser](https://github.com/dwvisser),
 [thunderbiscuit](https://github.com/thunderbiscuit)
 
+### TODO
+
+Some planned changes:
+
+* An information page for each podcast 
+([enhancement request](https://gitlab.com/alpou/shellcaster-classic/-/issues/1))
+* A more convenient presentation for the selection page after a SyncAll 
+([enhancement request](https://gitlab.com/alpou/shellcaster-classic/-/issues/2))
+
 ## Why "shellcaster"?
 
 The original author was trying to come up with a play on the word "podcast", and
