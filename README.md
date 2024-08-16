@@ -300,11 +300,16 @@ Thanks to these fine folks who have made contributions:
 
 ### TODO
 
+Thing to fix:
+
+* Handle mime types and extensions better, see `src/download.rs:124` and
+[this issue](https://github.com/gilcu3/hullcaster/issues/5).
+
 Some planned changes:
 
-* An information page for each podcast 
+* An information page for each podcast
 ([enhancement request](https://gitlab.com/alpou/shellcaster-classic/-/issues/1))
-* A more convenient presentation for the selection page after a SyncAll 
+* A more convenient presentation for the selection page after a SyncAll
 ([enhancement request](https://gitlab.com/alpou/shellcaster-classic/-/issues/2))
 
 ## Why "shellcaster"?

@@ -121,7 +121,9 @@ fn download_file(
 		Some("video/mp4")       => "mp4",
 		Some("video/x-m4v")     => "m4v",
 		_ => "mp3", // assume .mp3 unless we figure out otherwise
-		// TODO why not just take the extension from ep_data.url?
+		// TODO Get more audio types from
+		// https://www.iana.org/assignments/media-types/media-types.xhtml
+		// and use the extension from ep_data.url if the mime type is unknown
 	};
 
 	let mut file_name = sanitize_with_options(&ep_data.title, Options {
