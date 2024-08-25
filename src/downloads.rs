@@ -61,7 +61,6 @@ pub fn download_list(
 	}
 }
 
-
 /// Downloads a file to a local filepath, returning DownloadMsg variant
 /// indicating success or failure.
 fn download_file(
@@ -105,25 +104,11 @@ fn download_file(
 	let response = request.unwrap();
 
 	// figure out the file type
-	let ext = match response.header("content-type")
+	let ext = match get_file_ext(response.header("content-type"), &ep_data.url)
 	{
-		Some("audio/3gpp")   => "3gp",
-		Some("audio/aac")    => "aac",
-		Some("audio/x-m4a")  => "m4a",
-		Some("audio/midi")   => "mid",
-		Some("audio/x-midi") => "mid",
-		Some("audio/mpeg")   => "mp3",
-		Some("audio/ogg")    => "oga",
-		Some("audio/opus")   => "opus",
-		Some("audio/wav")    => "wav",
-		Some("audio/webm")   => "weba",
-		Some("video/quicktime") => "mov",
-		Some("video/mp4")       => "mp4",
-		Some("video/x-m4v")     => "m4v",
-		_ => "mp3", // assume .mp3 unless we figure out otherwise
-		// TODO Get more audio types from
-		// https://www.iana.org/assignments/media-types/media-types.xhtml
-		// and use the extension from ep_data.url if the mime type is unknown
+		Some(ext) => ext,
+		None => "mp3", // assume .mp3 unless we figure out otherwise
+		// TODO None case should print an error instead
 	};
 
 	let mut file_name = sanitize_with_options(&ep_data.title, Options {
@@ -165,4 +150,41 @@ fn download_file(
 		Ok(_) => DownloadMsg::Complete(ep_data),
 		Err(_) => DownloadMsg::FileWriteError(ep_data),
 	};
+}
+
+/// Returns what the extension of a downloaded file should be, based first on
+/// its mime type, and then on its URL if the mime type is missing or unknown
+/// Reference: https://www.iana.org/assignments/media-types/media-types.xhtml
+fn get_file_ext<'a>(mime_type: Option<&str>, url: &'a str) -> Option<&'a str>
+{
+	match mime_type
+	{
+		Some("audio/3gpp")   => Some("3gp"),
+		Some("audio/aac")    => Some("aac"),
+		Some("audio/x-m4a")  => Some("m4a"),
+		Some("audio/midi")   => Some("mid"),
+		Some("audio/x-midi") => Some("mid"),
+		Some("audio/mpeg")   => Some("mp3"),
+		Some("audio/ogg")    => Some("oga"),
+		Some("audio/opus")   => Some("opus"),
+		Some("audio/wav")    => Some("wav"),
+		Some("audio/webm")   => Some("weba"),
+		Some("video/quicktime") => Some("mov"),
+		Some("video/mp4")       => Some("mp4"),
+		Some("video/x-m4v")     => Some("m4v"),
+		// Otherwise, use the extension in the URL as a fallback
+		_ => {
+			// Look for what's after the last slash (/)
+			match url.rsplit('/').next()
+			{
+				Some(file_name) => {
+					// Look for what's after the last dot (.)
+					// Return Some(ext) if next returns Some(ext),
+					// return None if next returns None
+					file_name.rsplit('.').next()
+				},
+				None => None
+			}
+		}
+	}
 }
