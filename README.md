@@ -302,7 +302,7 @@ Thanks to these fine folks who have made contributions:
 
 Thing to fix:
 
-* Handle mime types and extensions better, see `src/download.rs:124` and
+* Handle mime types and extensions better, see `src/download.rs:111` and
 [this issue](https://github.com/gilcu3/hullcaster/issues/5).
 
 Some planned changes:
