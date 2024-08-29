@@ -145,13 +145,13 @@ quit = [ "q" ]
 # on terminals without the ability to add/change colors.
 
 # all regular text
-normal_foreground = "grey"
-normal_background = "black"
+#normal_foreground = "grey"
+#normal_background = "terminal"
 
 # colors for bolded text, including podcasts/episodes that are unplayed,
 # and some titles
-bold_foreground = "white"
-bold_background = "black"
+#bold_foreground = "white"
+#bold_background = "terminal"
 
 # colors for the currently selected podcast/episode
 highlighted_active_foreground = "rgb(85, 85, 85)"

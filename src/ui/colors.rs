@@ -38,8 +38,8 @@ impl AppColors
 	pub fn default() -> Self
 	{
 		return Self {
-			normal: (Color::Grey, Color::Black),
-			bold: (Color::White, Color::Black),
+			normal: (Color::Grey, Color::Reset),
+			bold: (Color::White, Color::Reset),
 			highlighted_active: (Color::Black, Color::DarkYellow),
 			highlighted: (Color::Black, Color::Grey),
 			error: (Color::Red, Color::Black),
