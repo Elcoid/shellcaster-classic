@@ -159,19 +159,28 @@ fn get_file_ext<'a>(mime_type: Option<&str>, url: &'a str) -> Option<&'a str>
 {
 	match mime_type
 	{
-		Some("audio/3gpp")   => Some("3gp"),
-		Some("audio/aac")    => Some("aac"),
-		Some("audio/x-m4a")  => Some("m4a"),
-		Some("audio/midi")   => Some("mid"),
-		Some("audio/x-midi") => Some("mid"),
-		Some("audio/mpeg")   => Some("mp3"),
-		Some("audio/ogg")    => Some("oga"),
-		Some("audio/opus")   => Some("opus"),
-		Some("audio/wav")    => Some("wav"),
-		Some("audio/webm")   => Some("weba"),
-		Some("video/quicktime") => Some("mov"),
-		Some("video/mp4")       => Some("mp4"),
-		Some("video/x-m4v")     => Some("m4v"),
+		// Audio
+		Some("audio/3gpp")                        => Some("3gp"),
+		Some("audio/aac")                         => Some("aac"),
+		Some("audio/flac")                        => Some("flac"),
+		Some("audio/x-m4a")                       => Some("m4a"),
+		Some("audio/matroska")                    => Some("mka"),
+		Some("audio/midi") | Some("audio/x-midi") => Some("mid"),
+		Some("audio/midi-clip")                   => Some("midi2"),
+		Some("audio/mp4")                         => Some("mp4"),
+		Some("audio/mpeg")                        => Some("mp3"),
+		Some("audio/ogg") | Some("audio/vorbis")  => Some("oga"),
+		Some("audio/opus")                        => Some("opus"),
+		Some("audio/wav")                         => Some("wav"),
+		Some("audio/webm")                        => Some("weba"),
+		// Video
+		Some("video/3gpp")        => Some("3gp"),
+		Some("video/3gpp2")       => Some("3g2"),
+		Some("video/matroska")    => Some("mkv"),
+		Some("video/matroska-3d") => Some("mk3d"),
+		Some("video/quicktime")   => Some("mov"),
+		Some("video/mp4")         => Some("mp4"),
+		Some("video/x-m4v")       => Some("m4v"),
 		// Otherwise, use the extension in the URL as a fallback
 		_ => {
 			// Look for what's after the last slash (/)
