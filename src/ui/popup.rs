@@ -367,7 +367,8 @@ impl<'a> PopupWin<'a>
 			"Select which episodes to download with {}. Select all/none with {}. Press {} to confirm the selection and exit the menu.",
 			self.list_keys(UserAction::MarkPlayed, Some(2)),
 			self.list_keys(UserAction::MarkAllPlayed, Some(2)),
-			self.list_keys(UserAction::Quit, Some(2)));
+			self.list_keys(UserAction::Quit, Some(2))
+		);
 		let mut download_win = Menu::new(
 			download_panel,
 			Some(header),
@@ -521,7 +522,8 @@ impl<'a> PopupWin<'a>
 					if i == max_keys - 1
 					{
 						s = format!("{s}, \"{key}\"");
-					} else
+					}
+					else
 					{
 						s = format!("{s}, or \"{key}\"");
 					}

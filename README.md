@@ -53,7 +53,7 @@ Notes:
 Next, download and compile the source code:
 
 ```bash
-git clone https://github.com/Elcoid/shellcaster-classic
+git clone https://gitlab.com/alpou/shellcaster-classic
 cd shellcaster-classic
 cargo build --release  # add or remove any features with --features
 
@@ -77,7 +77,7 @@ request.
 
 ### On other systems
 
-Shellcaster is **not currently supported** on other systems.
+Shellcaster is **not officially supported** on other systems.
 
 Although some work has been done to try to get it working on Windows, unicode
 support is weak and there are issues when resizing the screen. You *might* have
@@ -304,6 +304,8 @@ Thing to fix:
 
 * Handle mime types and extensions better, see `src/download.rs:111` and
 [this issue](https://github.com/gilcu3/hullcaster/issues/5).
+* Allow episodes marked as downloaded to be redownloaded, see
+[this issue](https://github.com/jeff-hughes/shellcaster/issues/60).
 
 Some planned changes:
 
