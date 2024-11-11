@@ -226,6 +226,7 @@ impl<'a> PopupWin<'a>
 			(Some(UserAction::DownloadAll), "Download all:"),
 			(Some(UserAction::Delete), "Delete file:"),
 			(Some(UserAction::DeleteAll), "Delete all files:"),
+			(Some(UserAction::UnmarkDownloaded), "Unmark as downloaded:"),
 			(Some(UserAction::Remove), "Remove from list:"),
 			(Some(UserAction::RemoveAll), "Remove all from list:"),
 			// (None, ""),
