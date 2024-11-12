@@ -241,6 +241,8 @@ impl<'a> PopupWin<'a>
 				Some(action) => {
 					let keys = self.keymap.keys_for_action(action);
 					// longest prefix is 21 chars long
+					// TODO Replace hard-coded 21 with dynamic value taken from
+					// the `actions` vector
 					let key_str = match keys.len()
 					{
 						0 => format!("{:>21} <missing>", action_str),

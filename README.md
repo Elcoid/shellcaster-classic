@@ -307,6 +307,7 @@ Thing to fix:
 
 * Handle mime types and extensions better, see `src/download.rs:111` and
 [this issue](https://github.com/gilcu3/hullcaster/issues/5).
+* Various TODOs. To list them all: `$ cd src; grep -Hrn TODO`
 
 Some planned changes:
 

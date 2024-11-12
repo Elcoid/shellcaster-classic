@@ -270,9 +270,9 @@ impl Menuable for NewEpisode
 
 		let title_len = self.title.grapheme_len();
 		let pod_title_len = self.pod_title.grapheme_len();
-		let empty_string = if length > title_len + pod_title_len + 9
+		let empty_string = if length > title_len + pod_title_len + 9 // TODO Why 9?
 		{
-			let empty = vec![" "; length - title_len - pod_title_len - 9];
+			let empty = vec![" "; length - title_len - pod_title_len - 9]; // TODO Why 9?
 			empty.join("")
 		}
 		else
