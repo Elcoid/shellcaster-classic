@@ -73,6 +73,7 @@ pub enum UiMsg
 	Download(i64, i64),
 	DownloadMulti(Vec<(i64, i64)>),
 	DownloadAll(i64),
+	UnmarkDownloaded(i64, i64),
 	Delete(i64, i64),
 	DeleteAll(i64),
 	RemovePodcast(i64, bool),
@@ -413,6 +414,18 @@ impl<'a> Ui<'a>
 						if let Some(pod_id) = curr_pod_id
 						{
 							return UiMsg::DownloadAll(pod_id);
+						}
+					}
+					Some(UserAction::UnmarkDownloaded) => {
+						if let ActivePanel::EpisodeMenu = self.active_panel
+						{
+							if let Some(pod_id) = curr_pod_id
+							{
+								if let Some(ep_id) = curr_ep_id
+								{
+									return UiMsg::UnmarkDownloaded(pod_id, ep_id);
+								}
+							}
 						}
 					}
 

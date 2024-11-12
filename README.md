@@ -256,6 +256,7 @@ also listed below, for convenience.
     Shift+M   | Mark all episodes as played/unplayed
     d         | Download selected episode
     Shift+D   | Download all episodes
+    u         | Unmark episode as downloaded (allows redownload)
     x         | Delete downloaded file
     Shift+X   | Delete all downloaded files
     r         | Remove selected feed/episode from list
@@ -296,6 +297,8 @@ Thanks to these fine folks who have made contributions:
 [a-kenji](https://github.com/a-kenji),
 [dougli1sqrd](https://github.com/dougli1sqrd),
 [dwvisser](https://github.com/dwvisser),
+[luvchurchill](https://github.com/luvchurchill),
+[RankoKohime](https://github.com/RankoKohime),
 [thunderbiscuit](https://github.com/thunderbiscuit)
 
 ### TODO
@@ -304,8 +307,6 @@ Thing to fix:
 
 * Handle mime types and extensions better, see `src/download.rs:111` and
 [this issue](https://github.com/gilcu3/hullcaster/issues/5).
-* Allow episodes marked as downloaded to be redownloaded, see
-[this issue](https://github.com/jeff-hughes/shellcaster/issues/60).
 
 Some planned changes:
 

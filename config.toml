@@ -113,6 +113,7 @@ mark_all_played = [ "M" ]
 
 download = [ "d" ]
 download_all = [ "D" ]
+unmark_downloaded = [ "u" ]
 delete = [ "x" ]
 delete_all = [ "X" ]
 remove = [ "r" ]
