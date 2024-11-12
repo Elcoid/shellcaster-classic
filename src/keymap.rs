@@ -30,11 +30,11 @@ pub enum UserAction
 
 	Download,
 	DownloadAll,
+	UnmarkDownloaded,
 	Delete,
 	DeleteAll,
 	Remove,
 	RemoveAll,
-	UnmarkDownloaded,
 
 	FilterPlayed,
 	FilterDownloaded,
@@ -184,9 +184,9 @@ impl Keybindings
 			(UserAction::MarkAllPlayed, vec!["M".to_string()]),
 			(UserAction::Download, vec!["d".to_string()]),
 			(UserAction::DownloadAll, vec!["D".to_string()]),
+			(UserAction::UnmarkDownloaded, vec!["u".to_string()]),
 			(UserAction::Delete, vec!["x".to_string()]),
 			(UserAction::DeleteAll, vec!["X".to_string()]),
-			(UserAction::UnmarkDownloaded, vec!["u".to_string()]),
 			(UserAction::Remove, vec!["r".to_string()]),
 			(UserAction::RemoveAll, vec!["R".to_string()]),
 			(UserAction::FilterPlayed, vec!["1".to_string()]),

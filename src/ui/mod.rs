@@ -416,6 +416,18 @@ impl<'a> Ui<'a>
 							return UiMsg::DownloadAll(pod_id);
 						}
 					}
+					Some(UserAction::UnmarkDownloaded) => {
+						if let ActivePanel::EpisodeMenu = self.active_panel
+						{
+							if let Some(pod_id) = curr_pod_id
+							{
+								if let Some(ep_id) = curr_ep_id
+								{
+									return UiMsg::UnmarkDownloaded(pod_id, ep_id);
+								}
+							}
+						}
+					}
 
 					Some(UserAction::Delete) => {
 						if let ActivePanel::EpisodeMenu = self.active_panel
@@ -436,15 +448,6 @@ impl<'a> Ui<'a>
 						}
 					}
 
-					Some(UserAction::UnmarkDownloaded) => {
-						if let ActivePanel::EpisodeMenu = self.active_panel {
-							if let Some(pod_id) = curr_pod_id {
-								if let Some(ep_id) = curr_ep_id {
-									return UiMsg::UnmarkDownloaded(pod_id, ep_id);
-								}
-							}
-						}
-					}
 					Some(UserAction::Remove) => match self.active_panel
 					{
 						ActivePanel::PodcastMenu => {
