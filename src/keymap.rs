@@ -93,6 +93,7 @@ impl Keybindings
 			(config.mark_all_played, UserAction::MarkAllPlayed),
 			(config.download, UserAction::Download),
 			(config.download_all, UserAction::DownloadAll),
+			(config.unmark_downloaded, UserAction::UnmarkDownloaded),
 			(config.delete, UserAction::Delete),
 			(config.delete_all, UserAction::DeleteAll),
 			(config.remove, UserAction::Remove),
