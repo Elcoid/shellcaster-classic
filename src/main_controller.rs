@@ -667,6 +667,7 @@ impl MainController
 						self.config.max_retries,
 						&self.config.filename_prefix,
 						&self.config.filename_suffix,
+						self.config.short_filename,
 						&self.threadpool,
 						self.tx_to_main.clone(),
 					);
