@@ -79,6 +79,14 @@ fn main() -> Result<()>
 				"Sets a custom config file location. Can also be set with environment variable."
 			)
 		)
+		.arg(Arg::new("short-filename")
+			.short('s')
+			.long("short-filename")
+			.global(true)
+			.help(
+				"Truncates filenames to 140 characters to stay under Windows path length limits."
+			)
+		)
 		.subcommand(Command::new("sync")
 			.about("Syncs all podcasts in database")
 			.arg(Arg::new("quiet")
@@ -132,7 +140,8 @@ fn main() -> Result<()>
 			);
 			process::exit(1);
 		});
-	let config = Config::new(&config_path)?;
+	let mut config = Config::new(&config_path)?;
+	config.short_filename = args.is_present("short-filename");
 
 	let mut db_path = config_path;
 	if !db_path.pop()
