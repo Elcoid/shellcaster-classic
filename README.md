@@ -287,11 +287,18 @@ schedule of your choice.
 ## Contributing
 
 Contributions from others are welcome! If you wish to contribute, feel free to
-clone the repo and submit pull requests. **Please ensure you are on the
-`develop` branch when making your edits**, as this is where the continued
-development of the app is taking place. Pull requests will only be merged to the
-`develop` branch, so you can help to avoid merge conflicts by doing your work on
-that branch in the first place.
+clone the repo and submit pull requests.
+
+When you do, please observe the following rules:
+* Ensure you are on the `develop` branch when making your edits, as this is
+  where the continued development of the app is taking place. Pull requests will
+  only be merged to the `develop` branch, so you can help to avoid merge
+  conflicts by doing your work on that branch in the first place.
+* Indent your code with tabs, not with spaces. This is
+  [for accessibility reasons](https://www.reddit.com/r/javascript/comments/c8drjo/nobody_talks_about_the_real_reason_to_use_tabs/).
+* Use [the Allman style](https://en.wikipedia.org/wiki/Indentation_style#Allman)
+  to place your braces (`{}`), except when opening a block in the arm of a
+  `match` (`=> {`). In case of doubt, be consistent with the rest of the code.
 
 Thanks to these fine folks who have made contributions:
 [a-kenji](https://github.com/a-kenji),
@@ -300,6 +307,9 @@ Thanks to these fine folks who have made contributions:
 [luvchurchill](https://github.com/luvchurchill),
 [RankoKohime](https://github.com/RankoKohime),
 [thunderbiscuit](https://github.com/thunderbiscuit)
+
+And thanks to the original author for starting this project:
+[Jeff Hughes](https://github.com/jeff-hughes/)
 
 ### TODO
 
