@@ -38,8 +38,10 @@ pub struct MainController
 	threadpool: Threadpool,
 	podcasts: LockVec<Podcast>,
 	filters: Filters,
-	sync_counter: usize,
-	sync_tracker: Vec<SyncResult>,
+	sync_results: Vec<SyncResult>,
+	//Contains the *names* of the podcasts that are being synced
+	sync_tracker: HashSet<String>,
+	//Contains the *ids* of the episodes that are being downloaded
 	download_tracker: HashSet<i64>,
 	pub ui_thread: std::thread::JoinHandle<()>,
 	pub tx_to_ui: mpsc::Sender<MainMessage>,
@@ -89,8 +91,8 @@ impl MainController
 			podcasts: podcast_list,
 			filters: Filters::default(),
 			ui_thread: ui_thread,
-			sync_counter: 0,
-			sync_tracker: Vec::new(),
+			sync_results: Vec::new(),
+			sync_tracker: HashSet::new(),
 			download_tracker: HashSet::new(),
 			tx_to_ui: tx_to_ui,
 			tx_to_main: tx_to_main,
@@ -317,7 +319,7 @@ impl MainController
 	/// downloading files.
 	pub fn update_tracker_notif(&self)
 	{
-		let sync_len = self.sync_counter;
+		let sync_len = self.sync_tracker.len();
 		let dl_len = self.download_tracker.len();
 		let sync_plural = if sync_len > 1 { "s" } else { "" };
 		let dl_plural = if dl_len > 1 { "s" } else { "" };
@@ -368,7 +370,7 @@ impl MainController
 		let mut pod_data = Vec::new();
 		match pod_id
 		{
-			// just grab one podcast
+			// Sync: just grab one podcast
 			Some(id) => pod_data.push(
 				self.podcasts
 					.map_single(id, |pod| {
@@ -380,7 +382,7 @@ impl MainController
 					})
 					.unwrap(),
 			),
-			// get all of 'em!
+			// SyncAll: get all of 'em!
 			None => {
 				pod_data = self.podcasts.map(
 					|pod| PodcastFeed::new(
@@ -394,7 +396,9 @@ impl MainController
 		}
 		for feed in pod_data.into_iter()
 		{
-			self.sync_counter += 1;
+			self.sync_tracker.insert(
+				feed.title.to_owned().unwrap_or("[Untitled]".to_owned())
+			);
 			feeds::check_feed(
 				feed,
 				self.config.max_retries,
@@ -439,23 +443,24 @@ impl MainController
 
 				if pod_id.is_some()
 				{
-					self.sync_tracker.push(result);
-					self.sync_counter -= 1;
+					self.sync_results.push(result);
+					self.sync_tracker.remove(&title);
 					self.update_tracker_notif();
 
-					if self.sync_counter == 0
+					if self.sync_tracker.is_empty()
 					{
 						// count up total new episodes and updated
 						// episodes when sync process is finished
 						let mut added = 0;
 						let mut updated = 0;
 						let mut new_eps = Vec::new();
-						for res in self.sync_tracker.iter() {
+						for res in self.sync_results.iter()
+						{
 							added += res.added.len();
 							updated += res.updated.len();
 							new_eps.extend(res.added.clone());
 						}
-						self.sync_tracker = Vec::new();
+						self.sync_results = Vec::new();
 						self.notif_to_ui(
 							format!(
 								"Sync complete: Added {added}, updated {updated} episodes."
