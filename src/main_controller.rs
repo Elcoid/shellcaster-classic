@@ -39,9 +39,9 @@ pub struct MainController
 	podcasts: LockVec<Podcast>,
 	filters: Filters,
 	sync_results: Vec<SyncResult>,
-	//Contains the *names* of the podcasts that are being synced
+	// Contains the *names* of the podcasts that are being synced
 	sync_tracker: HashSet<String>,
-	//Contains the *ids* of the episodes that are being downloaded
+	// Contains the *ids* of the episodes that are being downloaded
 	download_tracker: HashSet<i64>,
 	pub ui_thread: std::thread::JoinHandle<()>,
 	pub tx_to_ui: mpsc::Sender<MainMessage>,
