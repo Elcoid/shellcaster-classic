@@ -333,7 +333,14 @@ impl MainController
 		}
 		else if sync_len > 0
 		{
-			let notif = format!("Syncing {sync_len} podcast{sync_plural}...");
+			// The titles of the podcasts being synced:
+			// "podcast1, podcast2, ..."
+			let titles = self.sync_tracker
+				.iter()
+				.map(|s| &s[..])
+				.collect::<Vec<&str>>()
+				.join(", ");
+			let notif = format!("Syncing {sync_len} podcast{sync_plural}... {titles}");
 			self.persistent_notif_to_ui(notif, false);
 		}
 		else if dl_len > 0

@@ -273,17 +273,31 @@ impl NotifWin
 	/// Prints a notification to the window.
 	fn display_notif(&self, notif: &Notification)
 	{
+		// Truncate notif.message to make it fit the window,
+		// appending "..." if necessary
+		let notif_msg = if notif.message.len() > (self.total_cols as usize)
+		{
+			&format!(
+				"{}...",
+				&notif.message[..((self.total_cols - 3) as usize)]
+			)
+		}
+		else
+		{
+			&notif.message
+		};
+		
 		self.redraw();
 		let styled = if notif.error
 		{
-			style::style(&notif.message)
+			style::style(&notif_msg)
 				.with(self.colors.error.0)
 				.on(self.colors.error.1)
 				.attribute(style::Attribute::Bold)
 		}
 		else
 		{
-			style::style(&notif.message)
+			style::style(&notif_msg)
 				.with(self.colors.normal.0)
 				.on(self.colors.normal.1)
 		};
