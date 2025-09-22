@@ -119,18 +119,28 @@ impl MainController
 					self.add_or_sync_data(pod, None)
 				},
 
-				Message::Feed(FeedMsg::Error(feed)) => match feed.title
-				{
-					Some(t) => {
-						self.notif_to_ui(
-							format!("Error retrieving RSS feed for {t}."),
+				Message::Feed(FeedMsg::Error(feed)) => {
+					match feed.title
+					{
+						Some(t) => {
+							self.notif_to_ui(
+								format!("Error retrieving RSS feed for {t}."),
+								true
+							)
+						}
+						None => self.notif_to_ui(
+							"Error retrieving RSS feed.".to_string(),
 							true
-						)
+						),
 					}
-					None => self.notif_to_ui(
-						"Error retrieving RSS feed.".to_string(),
-						true
-					),
+					// When a syncing error happens, the feed is removed
+					// from `sync_tracker`. Since all feeds being synced
+					// have an id, we don't have to check when `feed.id`
+					// is `None`.
+					if let Some(id) = feed.id
+					{
+						self.sync_tracker.remove(&id);
+					}
 				},
 
 				Message::Ui(UiMsg::Sync(pod_id)) => self.sync(Some(pod_id)),
