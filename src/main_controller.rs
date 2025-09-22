@@ -1,5 +1,5 @@
 use anyhow::Result;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::mpsc;
@@ -39,9 +39,11 @@ pub struct MainController
 	podcasts: LockVec<Podcast>,
 	filters: Filters,
 	sync_results: Vec<SyncResult>,
-	// Contains the *names* of the podcasts that are being synced
-	sync_tracker: HashSet<String>,
-	// Contains the *ids* of the episodes that are being downloaded
+	// Maps the ids of the podcasts that are being synced to their names
+	// Podcasts that are being synced always have an id, hence the `i64`
+	// instead of an `Option<i64>`
+	sync_tracker: HashMap<i64, String>,
+	// Contains the ids of the episodes that are being downloaded
 	download_tracker: HashSet<i64>,
 	pub ui_thread: std::thread::JoinHandle<()>,
 	pub tx_to_ui: mpsc::Sender<MainMessage>,
@@ -92,7 +94,7 @@ impl MainController
 			filters: Filters::default(),
 			ui_thread: ui_thread,
 			sync_results: Vec::new(),
-			sync_tracker: HashSet::new(),
+			sync_tracker: HashMap::new(),
 			download_tracker: HashSet::new(),
 			tx_to_ui: tx_to_ui,
 			tx_to_main: tx_to_main,
@@ -336,7 +338,7 @@ impl MainController
 			// The titles of the podcasts being synced:
 			// "podcast1, podcast2, ..."
 			let titles = self.sync_tracker
-				.iter()
+				.values()
 				.map(|s| &s[..])
 				.collect::<Vec<&str>>()
 				.join(", ");
@@ -404,6 +406,7 @@ impl MainController
 		for feed in pod_data.into_iter()
 		{
 			self.sync_tracker.insert(
+				feed.id.expect("All feeds in pod_data have an id; this shouldn't panic"),
 				feed.title.to_owned().unwrap_or("[Untitled]".to_owned())
 			);
 			feeds::check_feed(
@@ -448,10 +451,10 @@ impl MainController
 				}
 				self.update_filters(self.filters, true);
 
-				if pod_id.is_some()
+				if let Some(id) = pod_id
 				{
 					self.sync_results.push(result);
-					self.sync_tracker.remove(&title);
+					self.sync_tracker.remove(&id);
 					self.update_tracker_notif();
 
 					if self.sync_tracker.is_empty()
