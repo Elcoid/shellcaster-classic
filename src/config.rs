@@ -57,6 +57,7 @@ pub struct Config
 	pub colors: AppColors,
 	pub filename_prefix: String,
 	pub filename_suffix: String,
+	pub short_filename: bool,
 }
 
 /// A temporary struct used to deserialize data from the TOML configuration
@@ -73,6 +74,7 @@ struct ConfigFromToml
 	colors: Option<AppColorsFromToml>,
 	filename_prefix: Option<String>,
 	filename_suffix: Option<String>,
+	short_filename: Option<bool>,
 }
 
 /// A temporary struct used to deserialize keybinding data from the TOML
@@ -202,6 +204,7 @@ impl Config
 					colors: Some(colors),
 					filename_prefix: None,
 					filename_suffix: None,
+					short_filename: None,
 				}
 			}
 		};
@@ -315,6 +318,7 @@ fn config_with_defaults(config_toml: ConfigFromToml) -> Result<Config>
 		colors: colors,
 		filename_prefix: filename_prefix,
 		filename_suffix: filename_suffix,
+		short_filename: config_toml.short_filename.unwrap_or(false),
 	});
 }
 
