@@ -8,9 +8,9 @@ description = "A terminal-based podcast manager to subscribe to and play podcast
 keywords = ["podcast", "terminal", "TUI", "curses"]
 categories = ["multimedia::audio", "command-line-interface"]
 
-homepage = "https://gitlab.com/alpou/shellcaster-classic"
-repository = "https://gitlab.com/alpou/shellcaster-classic"
-documentation = "https://gitlab.com/alpou/shellcaster-classic"
+homepage = "https://codeberg.org/alpin/shellcaster-classic"
+repository = "https://codeberg.org/alpin/shellcaster-classic"
+documentation = "https://codeberg.org/alpin/shellcaster-classic"
 readme = "README.md"
 
 # Output a binary called "shellcaster" even if the

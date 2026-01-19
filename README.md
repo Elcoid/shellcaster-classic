@@ -9,7 +9,7 @@ not be any new major features. For a more featureful fork, you might be
 interested in [hullcaster](https://github.com/gilcu3/hullcaster).
 
 This project is hosted on
-[Gitlab](https://gitlab.com/alpou/shellcaster-classic) and mirrored on
+[Codeberg](https://codeberg.org/alpin/shellcaster-classic) and mirrored on
 [Github](https://github.com/Elcoid/shellcaster-classic). Issues and pull
 requests are accepted on both platforms. However, in case of mismatch between
 the two, consider the version on Gitlab as the correct one.
@@ -53,7 +53,7 @@ Notes:
 Next, download and compile the source code:
 
 ```bash
-git clone https://gitlab.com/alpou/shellcaster-classic
+git clone https://codeberg.org/alpin/shellcaster-classic
 cd shellcaster-classic
 cargo build --release  # add or remove any features with --features
 
@@ -322,9 +322,9 @@ Thing to fix:
 Some planned changes:
 
 * An information page for each podcast
-([enhancement request](https://gitlab.com/alpou/shellcaster-classic/-/issues/1))
+([enhancement request](https://codeberg.org/alpin/shellcaster-classic/issues/1))
 * A more convenient presentation for the selection page after a SyncAll
-([enhancement request](https://gitlab.com/alpou/shellcaster-classic/-/issues/2))
+([enhancement request](https://codeberg.org/alpin/shellcaster-classic/issues/2))
 
 ## Why "shellcaster"?
 

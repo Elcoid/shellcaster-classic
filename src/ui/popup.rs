@@ -183,7 +183,7 @@ impl<'a> PopupWin<'a>
 		);
 		let _ = welcome_win.write_wrap_line(
 			row + 1,
-			"https://gitlab.com/alpou/shellcaster-classic",
+			"https://codeberg.org/alpin/shellcaster-classic",
 			None,
 		);
 
