@@ -12,7 +12,7 @@ This project is hosted on
 [Codeberg](https://codeberg.org/alpin/shellcaster-classic) and mirrored on
 [Github](https://github.com/Elcoid/shellcaster-classic). Issues and pull
 requests are accepted on both platforms. However, in case of mismatch between
-the two, consider the version on Gitlab as the correct one.
+the two, consider the version on Codeberg as the correct one.
 
 # Shellcaster
 
