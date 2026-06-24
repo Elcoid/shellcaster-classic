@@ -1,6 +1,6 @@
 [package]
 name = "shellcaster-classic"
-version = "2.1.0"
+version = "2.2.1"
 authors = ["alpou <alpou at tutanota dot com>", "Jeff Hughes <jeff.hughes at gmail dot com>"]
 edition = "2021"
 license = "GPL-3.0-or-later"

@@ -1,5 +1,15 @@
 # Changelog
 
+## v2.2.1 (2025-09-22)
+- Fix hangup when synced feed cannot be reached.
+
+## v2.2.0 (2024-11-12)
+- Add possibility to mark a previously downloaded episode as not downloaded.
+  This allows an episode to be downloaded again.
+
+## v2.1.1 (2024-08-29)
+- Improve logic to determine file extensions from MIME types.
+
 ## v2.1.0 (2024-07-05)
 - Add options `filename_prefix` and `filename_suffix` to control how and where
   the publication date and time of the episodes get added in their file names
