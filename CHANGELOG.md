@@ -5,7 +5,8 @@
 
 ## v2.2.0 (2024-11-12)
 - Add possibility to mark a previously downloaded episode as not downloaded.
-  This allows an episode to be downloaded again.
+  This allows an episode to be downloaded again (thanks to contributor
+  [Ashi Friedberg (luvchurchill)](https://github.com/luvchurchill) for the fix).
 
 ## v2.1.1 (2024-08-29)
 - Improve logic to determine file extensions from MIME types.
@@ -17,8 +18,11 @@
   `filename_suffix = ""`, which prepend the date. The previous behaviour was to
   append the date and time, which can be obtained with `filename_prefix = ""`
   and `filename_suffix = "_%Y%m%d_%H%M%S"`. See the provided default config file
-  `config.toml` for more information.
-- HTTP redirects are now followed (up to 10 times) when downloading a file.
+  `config.toml` for more information. Thanks to contributor
+  [Ranko Kohime](https://github.com/RankoKohime) for the help.
+- HTTP redirects are now followed (up to 10 times) when downloading a file
+  (thanks to contributor
+  [Eric Douglass (dougli1sqrd)](https://github.com/dougli1sqrd) for the fix).
 
 ## v2.0.1 (2022-03-03)
 - Bug fix release to handle improper timeouts on HTTP requests
