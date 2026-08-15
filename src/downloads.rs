@@ -43,6 +43,7 @@ pub fn download_list(
 	max_retries: usize,
 	filename_prefix: &str,
 	filename_suffix: &str,
+	short_filename: bool,
 	threadpool: &Threadpool,
 	tx_to_main: Sender<Message>,
 ) {
@@ -54,7 +55,7 @@ pub fn download_list(
 		let prefix = filename_prefix.to_owned();
 		let suffix = filename_suffix.to_owned();
 		threadpool.execute(move || {
-			let result = download_file(ep, dest2, max_retries, prefix, suffix);
+			let result = download_file(ep, dest2, max_retries, prefix, suffix, short_filename);
 			tx.send(Message::Dl(result))
 				.expect("Thread messaging error");
 		});
@@ -69,6 +70,7 @@ fn download_file(
 	mut max_retries: usize,
 	filename_prefix: String,
 	filename_suffix: String,
+	short_filename: bool,
 ) -> DownloadMsg
 {
 	let agent_builder = ureq::builder()
@@ -132,6 +134,11 @@ fn download_file(
 			file_name,
 			pubdate.format(&filename_suffix)
 		);
+	}
+	
+	// If short_filename is enabled, truncate to 140 characters to stay under Windows path limits
+	if short_filename && file_name.len() > 140 {
+		file_name.truncate(140);
 	}
 
 	let mut file_path = dest;
