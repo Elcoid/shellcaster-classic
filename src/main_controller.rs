@@ -135,12 +135,12 @@ impl MainController
 					}
 					// When a syncing error happens, the feed is removed
 					// from `sync_tracker`. Since all feeds being synced
-					// have an id, we don't have to check when `feed.id`
-					// is `None`.
-					if let Some(id) = feed.id
+					// have an id, the `None` case is unreachable.
+					match feed.id
 					{
-						self.sync_tracker.remove(&id);
-					}
+						Some(id) => self.sync_tracker.remove(&id),
+						None => unreachable!(),
+					};
 				},
 
 				Message::Ui(UiMsg::Sync(pod_id)) => self.sync(Some(pod_id)),
