@@ -142,6 +142,7 @@ impl MainController
 						Some(id) => self.sync_tracker.remove(&id),
 						None => unreachable!(),
 					};
+					self.update_tracker_notif();
 				},
 
 				Message::Ui(UiMsg::Sync(pod_id)) => self.sync(Some(pod_id)),
@@ -193,11 +194,18 @@ impl MainController
 				Message::Dl(DownloadMsg::Complete(ep_data)) => {
 					self.download_complete(ep_data)
 				},
-				Message::Dl(DownloadMsg::ResponseError(_)) => {
+				Message::Dl(DownloadMsg::ResponseError(ep_data)) => {
 					self.notif_to_ui(
-						"Error sending download request.".to_string(),
+						format!(
+							"Error sending download request for {}.",
+							ep_data.url
+						),
 						true
-					)
+					);
+					// When a download error happens, the episode is removed
+					// from `download_tracker`.
+					self.download_tracker.remove(&ep_data.id);
+					self.update_tracker_notif();
 				},
 				Message::Dl(DownloadMsg::FileCreateError(ep_data)) => {
 					match ep_data.file_path
