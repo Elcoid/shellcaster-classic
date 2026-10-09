@@ -39,12 +39,13 @@ pub struct MainController
 	podcasts: LockVec<Podcast>,
 	filters: Filters,
 	sync_results: Vec<SyncResult>,
-	// Maps the ids of the podcasts that are being synced to their names
+	// Contains the ids of the podcasts that are being synced.
 	// Podcasts that are being synced always have an id, hence the `i64`
 	// instead of an `Option<i64>`
-	sync_tracker: HashMap<i64, String>,
-	// Contains the ids of the episodes that are being downloaded
-	download_tracker: HashSet<i64>,
+	sync_tracker: HashSet<i64>,
+	// Maps the ids of the episodes that are being downloaded to the id of
+	// their podcast.
+	download_tracker: HashMap<i64, i64>,
 	pub ui_thread: std::thread::JoinHandle<()>,
 	pub tx_to_ui: mpsc::Sender<MainMessage>,
 	pub tx_to_main: mpsc::Sender<Message>,
@@ -94,8 +95,8 @@ impl MainController
 			filters: Filters::default(),
 			ui_thread: ui_thread,
 			sync_results: Vec::new(),
-			sync_tracker: HashMap::new(),
-			download_tracker: HashSet::new(),
+			sync_tracker: HashSet::new(),
+			download_tracker: HashMap::new(),
 			tx_to_ui: tx_to_ui,
 			tx_to_main: tx_to_main,
 			rx_to_main: rx_to_main,
@@ -336,28 +337,39 @@ impl MainController
 		let sync_plural = if sync_len > 1 { "s" } else { "" };
 		let dl_plural = if dl_len > 1 { "s" } else { "" };
 
+		// The titles of the podcasts being synced or from which
+		// episodes are being downloaded: "podcast1, podcast2, ..."
+		let titles = {
+			let tmp_pod_ids = self.download_tracker.values().copied().collect();
+			let all_pod_ids = self.sync_tracker.union(&tmp_pod_ids);
+			let borrowed_map = self.podcasts.borrow_map();
+
+			all_pod_ids.map(|pod_id| {
+					match borrowed_map.get(&pod_id)
+					{
+						Some(pod) => &pod.title,
+						None => "[Untitled]",
+					}
+				})
+				.collect::<Vec<&str>>()
+				.join(", ")
+		};
+
 		if sync_len > 0 && dl_len > 0
 		{
 			let notif = format!(
-				"Syncing {sync_len} podcast{sync_plural}, downloading {dl_len} episode{dl_plural}..."
+				"Syncing {sync_len} podcast{sync_plural}, downloading {dl_len} episode{dl_plural}... {titles}"
 			);
 			self.persistent_notif_to_ui(notif, false);
 		}
 		else if sync_len > 0
 		{
-			// The titles of the podcasts being synced:
-			// "podcast1, podcast2, ..."
-			let titles = self.sync_tracker
-				.values()
-				.map(|s| &s[..])
-				.collect::<Vec<&str>>()
-				.join(", ");
 			let notif = format!("Syncing {sync_len} podcast{sync_plural}... {titles}");
 			self.persistent_notif_to_ui(notif, false);
 		}
 		else if dl_len > 0
 		{
-			let notif = format!("Downloading {dl_len} episode{dl_plural}...");
+			let notif = format!("Downloading {dl_len} episode{dl_plural}... {titles}");
 			self.persistent_notif_to_ui(notif, false);
 		}
 		else
@@ -416,8 +428,7 @@ impl MainController
 		for feed in pod_data.into_iter()
 		{
 			self.sync_tracker.insert(
-				feed.id.expect("All feeds in pod_data have an id; this shouldn't panic"),
-				feed.title.to_owned().unwrap_or("[Untitled]".to_owned())
+				feed.id.expect("All feeds in pod_data have an id; this shouldn't panic")
 			);
 			feeds::check_feed(
 				feed,
@@ -667,7 +678,7 @@ impl MainController
 
 		// check against episodes currently being downloaded -- so we
 		// don't needlessly download them again
-		ep_data.retain(|ep| !self.download_tracker.contains(&ep.id));
+		ep_data.retain(|ep| !self.download_tracker.contains_key(&ep.id));
 
 		if !ep_data.is_empty()
 		{
@@ -684,7 +695,7 @@ impl MainController
 				Ok(path) => {
 					for ep in ep_data.iter()
 					{
-						self.download_tracker.insert(ep.id);
+						self.download_tracker.insert(ep.id, ep.pod_id);
 					}
 					downloads::download_list(
 						ep_data,
