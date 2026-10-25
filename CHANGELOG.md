@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.2.2 (2026-10-09)
+- Display names of podcasts of which episodes are being downloaded.
+- Fix hangup when episodes cannot be downloaded.
+
 ## v2.2.1 (2025-09-22)
 - Fix hangup when synced feed cannot be reached.
 
